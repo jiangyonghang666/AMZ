@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cellipse cx='27' cy='42' rx='9' ry='6' fill='%235b4b45' transform='rotate(-25 27 42)'/%3E%3Cellipse cx='73' cy='42' rx='9' ry='6' fill='%235b4b45' transform='rotate(25 73 42)'/%3E%3Cg fill='%23ffffff' stroke='%23ddd7cd' stroke-width='2'%3E%3Ccircle cx='50' cy='22' r='12'/%3E%3Ccircle cx='37' cy='27' r='11'/%3E%3Ccircle cx='63' cy='27' r='11'/%3E%3Ccircle cx='33' cy='38' r='10'/%3E%3Ccircle cx='67' cy='38' r='10'/%3E%3Ccircle cx='36' cy='66' r='12'/%3E%3Ccircle cx='50' cy='62' r='13'/%3E%3Ccircle cx='64' cy='66' r='12'/%3E%3Ccircle cx='42' cy='77' r='10'/%3E%3Ccircle cx='58' cy='77' r='10'/%3E%3C/g%3E%3Cellipse cx='50' cy='40' rx='17' ry='16' fill='%235b4b45'/%3E%3Ccircle cx='50' cy='24' r='8' fill='%23ffffff'/%3E%3Ccircle cx='43.5' cy='41' r='3.6' fill='%23ffffff'/%3E%3Ccircle cx='56.5' cy='41' r='3.6' fill='%23ffffff'/%3E%3Ccircle cx='44' cy='41.8' r='2' fill='%23302420'/%3E%3Ccircle cx='57' cy='41.8' r='2' fill='%23302420'/%3E%3Ccircle cx='44.6' cy='41' r='.7' fill='%23ffffff'/%3E%3Ccircle cx='57.6' cy='41' r='.7' fill='%23ffffff'/%3E%3Cellipse cx='50' cy='48.5' rx='2.2' ry='1.6' fill='%23907d6e'/%3E%3Cellipse cx='37' cy='47' rx='3.6' ry='2.2' fill='%23f4b8b8' opacity='.85'/%3E%3Cellipse cx='63' cy='47' rx='3.6' ry='2.2' fill='%23f4b8b8' opacity='.85'/%3E%3Cpath d='M46.5 52.5 Q50 55.5 53.5 52.5' stroke='%23ffffff' stroke-width='1.6' fill='none' stroke-linecap='round'/%3E%3Crect x='41' y='85' width='5' height='10' rx='2.5' fill='%235b4b45'/%3E%3Crect x='54' y='85' width='5' height='10' rx='2.5' fill='%235b4b45'/%3E%3C/svg%3E">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>江永航的工具站</title>
+<style>
+  :root {
+    --bg: #f6f7f9;
+    --card: #ffffff;
+    --text: #1f2933;
+    --text-sub: #6b7280;
+    --border: #e5e7eb;
+    --accent: #2563eb;
+    --accent-soft: #eff6ff;
+    --ok: #16a34a;
+    --warn: #d97706;
+    --radius: 14px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 32px 20px 80px; }
+
+  /* Header */
+  header { margin-bottom: 32px; }
+  header h1 { font-size: 26px; font-weight: 700; letter-spacing: 0.5px; }
+  header p { color: var(--text-sub); font-size: 14px; margin-top: 4px; }
+  header .date { float: right; font-size: 13px; color: var(--text-sub); }
+
+  /* Section */
+  section { margin-bottom: 40px; }
+  .sec-title {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 16px; font-weight: 700; margin-bottom: 14px;
+  }
+  .sec-title::before {
+    content: ""; width: 4px; height: 18px; border-radius: 2px;
+    background: var(--accent); display: inline-block;
+  }
+  .sec-title small { font-weight: 400; color: var(--text-sub); font-size: 12px; }
+
+  /* Quick links */
+  .quick { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+  .quick a {
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 14px 16px; text-decoration: none; color: var(--text);
+    display: flex; align-items: center; gap: 10px;
+    transition: box-shadow .15s, transform .15s;
+  }
+  .quick a:hover { box-shadow: 0 4px 14px rgba(0,0,0,.07); transform: translateY(-2px); }
+  .quick .icon { font-size: 20px; }
+  .quick .t { font-size: 14px; font-weight: 600; }
+  .quick .d { font-size: 12px; color: var(--text-sub); }
+
+  /* Tool wall */
+  .tools { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
+  .tool {
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 18px; min-height: 120px; position: relative;
+    transition: box-shadow .15s, transform .15s;
+  }
+  .tool:hover { box-shadow: 0 6px 18px rgba(0,0,0,.08); transform: translateY(-2px); }
+  .tool .badge {
+    position: absolute; top: 14px; right: 14px; font-size: 11px;
+    padding: 2px 8px; border-radius: 10px; background: var(--accent-soft); color: var(--accent);
+  }
+  .tool .badge.soon { background: #f3f4f6; color: var(--text-sub); }
+  .tool h3 { font-size: 15px; margin-bottom: 6px; }
+  .tool p { font-size: 13px; color: var(--text-sub); }
+  .tool .go {
+    display: inline-block; margin-top: 12px; font-size: 13px; color: var(--accent);
+    text-decoration: none; font-weight: 600;
+  }
+  .tool.add {
+    border-style: dashed; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; color: var(--text-sub);
+    cursor: pointer; background: transparent;
+  }
+  .tool.add:hover { background: var(--card); }
+  .tool.add .plus { font-size: 26px; color: var(--accent); }
+
+  /* Dashboard placeholder */
+  .dash { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
+  .dash .box {
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 18px; min-height: 140px;
+  }
+  .dash .box h4 { font-size: 14px; color: var(--text-sub); font-weight: 500; margin-bottom: 8px; }
+  .dash .big { font-size: 28px; font-weight: 700; }
+  .dash .hint { font-size: 12px; color: var(--text-sub); margin-top: 6px; }
+  .dash .empty {
+    display: flex; align-items: center; justify-content: center; height: 100px;
+    color: #cbd5e1; font-size: 13px;
+  }
+
+  /* Notes */
+  .note-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 16px 18px;
+  }
+  .note-card textarea {
+    width: 100%; min-height: 110px; border: none; resize: vertical; outline: none;
+    font-family: inherit; font-size: 14px; color: var(--text); background: transparent;
+  }
+  .note-card .bar {
+    display: flex; justify-content: flex-end; align-items: center; gap: 10px;
+    border-top: 1px solid var(--border); padding-top: 10px; margin-top: 8px;
+  }
+  .note-card .bar span { font-size: 12px; color: var(--text-sub); }
+  .note-card button {
+    border: none; background: var(--accent); color: #fff; font-size: 13px;
+    padding: 6px 16px; border-radius: 8px; cursor: pointer;
+  }
+  .note-card button:hover { opacity: .9; }
+
+  footer { text-align: center; font-size: 12px; color: var(--text-sub); margin-top: 60px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <span class="date" id="today"></span>
+    <h1>🧰 江永航的工具站</h1>
+    <p>AI 做出来的工具，都放在这里</p>
+  </header>
+
+  <!-- 常用快捷入口 -->
+  <section>
+    <div class="sec-title">常用入口 <small>每天要打开的东西</small></div>
+    <div class="quick">
+      <a href="https://www.amazon.ca/dp/B0CR7FT86Z" target="_blank">
+        <span class="icon">🤿</span>
+        <span><span class="t">浮潜面罩 Listing</span><br><span class="d">amazon.ca · B0CR7FT86Z</span></span>
+      </a>
+      <a href="#" title="排名简报每日 09:00 定时推送到企业微信">
+        <span class="icon">📈</span>
+        <span><span class="t">关键词排名简报</span><br><span class="d">每日 09:00 · 企业微信推送</span></span>
+      </a>
+      <a href="https://www.amazon.com/dp/B0FPQYF2ZH" target="_blank">
+        <span class="icon">❄️</span>
+        <span><span class="t">雪挡 · 美国站</span><br><span class="d">B0FPQYF2ZH · 雪季情报</span></span>
+      </a>
+      <a href="https://www.lingxing.com" target="_blank">
+        <span class="icon">⭐</span>
+        <span><span class="t">领星 ERP</span><br><span class="d">库存 · 销量 · 利润</span></span>
+      </a>
+    </div>
+  </section>
+
+  <!-- 工具卡片墙 -->
+  <section>
+    <div class="sec-title">工作工具 <small>AI 做一个，这里加一个</small></div>
+    <div class="tools">
+      <div class="tool">
+        <span class="badge">就绪</span>
+        <h3>🧮 万能计算器</h3>
+        <p>保本 ACOS / TACOS、出价反推 CPC、单件净利、促销评估、预算预估，输入即算。</p>
+        <a class="go" href="calculator.html">打开 →</a>
+      </div>
+      <div class="tool">
+        <span class="badge">定时推送</span>
+        <h3>📈 关键词排名简报</h3>
+        <p>每日 09:00 自动监控加/英两站核心词自然位，简报直推企业微信，不占网页。</p>
+      </div>
+      <div class="tool">
+        <span class="badge">就绪</span>
+        <h3>📝 Listing 文案检查</h3>
+        <p>粘贴标题和五点，一次跑 30 项规则：字符与结构、关键词覆盖、违禁风险词、AI 检索可读性。违禁词直接在原文上标红。</p>
+        <a class="go" href="listing.html">打开 →</a>
+      </div>
+      <div class="tool">
+        <span class="badge">就绪</span>
+        <h3>📊 广告报表分析器</h3>
+        <p>拖进搜索词报告，自动算 ACOS / CTR / CVR / CPC，直接列出该否的词和该加价的词，导出 CSV 就能贴回后台。文件只在本机解析。</p>
+        <a class="go" href="ads.html">打开 →</a>
+      </div>
+      <div class="tool">
+        <span class="badge">就绪</span>
+        <h3>✂️ SP 否词助手</h3>
+        <p>每周五自动抓领星搜索词数据，按可调参数筛出该否的词，智能标注否定方式，一键生成亚马逊后台批量表。仅自己使用，勿外传链接。</p>
+        <a class="go" href="https://sp-negative-tool.app.workbuddy.host/?sharecode=XQHNU7AJEJ" target="_blank">打开 →</a>
+      </div>
+      <div class="tool">
+        <span class="badge">就绪</span>
+        <h3>❄️ 雪季起量雷达</h3>
+        <p>盯美国 30 个雪带州、118 个城市未来 16 天的降雪与霜冻。按雪量排序、地图看雪线往南推，还能跟去年同期比早晚。</p>
+        <a class="go" href="snow.html">打开 →</a>
+      </div>
+      <div class="tool add" onclick="alert('占位格子：以后 AI 做好新工具，就替换这个格子')">
+        <span class="plus">＋</span>
+        <span>新工具放这里</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 数据看板占位 -->
+  <section>
+    <div class="sec-title">数据看板 <small>以后接入数据工具自动填充</small></div>
+    <div class="dash">
+      <div class="box">
+        <h4>核心词自然位（示例）</h4>
+        <div class="empty">待接入数据</div>
+        <div class="hint">scuba mask / snorkel set adult …</div>
+      </div>
+      <div class="box">
+        <h4>库存可卖天数</h4>
+        <div class="empty">待接入数据</div>
+        <div class="hint">对接领星后自动计算</div>
+      </div>
+      <div class="box">
+        <h4>雪季倒计时（美国站）</h4>
+        <div class="big" style="color:var(--warn)">— 天</div>
+        <div class="hint">首个降雪日起量窗口 · <a href="snow.html" style="color:var(--accent);text-decoration:none">查看雷达 →</a></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 笔记备忘 -->
+  <section>
+    <div class="sec-title">随手记 <small>写完点保存，浏览器本地记住</small></div>
+    <div class="note-card">
+      <textarea id="note" placeholder="例：11 月 1 号前把 snow cover 的 A+ 换成雪景图…"></textarea>
+      <div class="bar">
+        <span id="note-status"></span>
+        <button onclick="saveNote()">保存</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 生活工具（密码保护） -->
+  <section>
+    <div class="sec-title">生活工具 <small>🔒 私密区 · 仅自己可见</small></div>
+    <div id="life-lock" class="note-card" style="max-width:380px">
+      <div style="font-size:14px; font-weight:600; margin-bottom:8px">🔒 隐私重地，闲人免进（包括我自己忘了密码的时候）</div>
+      <div style="display:flex; gap:8px; align-items:center">
+        <input type="password" id="life-pwd" placeholder="输入密码查看"
+          style="flex:1; padding:7px 10px; border:1px solid var(--border); border-radius:8px; font-size:13px; outline:none;">
+        <button onclick="lifeUnlock()">解锁</button>
+      </div>
+      <div id="life-err" style="font-size:12px; color:#dc2626; margin-top:6px; display:none">密码不对哦，好奇心很可贵，但还是请回吧 🙂</div>
+    </div>
+    <div class="tools" id="life-tools" style="display:none">
+      <div class="tool">
+        <span class="badge">在线版</span>
+        <h3>🌶️ 耍起人生指南</h3>
+        <p>川渝宝宝专属：20 章 155 条「花掉啥子换回啥子」，能筛选能搜索。在线版，点开永远是最新内容。</p>
+        <a class="go" href="https://shuaqi-life-guide.app.workbuddy.host/?sharecode=LY33G3YII3" target="_blank">打开 →</a>
+      </div>
+      <div class="tool">
+        <span class="badge">就绪</span>
+        <h3>🍚 今天吃什么</h3>
+        <p>报一下家里有啥食材，告诉你能做啥、缺啥要买啥；晚上不知道吃啥就摇一下，还能按难度/耗时/成本/菜系筛。</p>
+        <a class="go" href="eat.html">打开 →</a>
+      </div>
+      <div class="tool">
+        <span class="badge">新</span>
+        <h3>🔮 八字命盘</h3>
+        <p>输入公历或农历生日，自动排四柱、算大运，按古法看旺衰、格局、调候、十神，每条结论都标了出处。</p>
+        <a class="go" href="mingli.html">打开 →</a>
+      </div>
+      <div class="tool add" onclick="alert('占位格子：以后做的小玩意放这里')">
+        <span class="plus">＋</span>
+        <span>下一个小玩意放这里</span>
+      </div>
+    </div>
+  </section>
+
+  <footer>小策为江永航而建 · 工具持续增加中</footer>
+</div>
+
+<script>
+  document.getElementById('today').textContent =
+    new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' });
+
+  const noteEl = document.getElementById('note');
+  noteEl.value = localStorage.getItem('yh-note') || '';
+
+  function saveNote() {
+    localStorage.setItem('yh-note', noteEl.value);
+    const s = document.getElementById('note-status');
+    s.textContent = '已保存 ✓';
+    setTimeout(() => s.textContent = '', 2000);
+  }
+
+  // 生活工具密码锁（页面里只存哈希，不存明文）
+  const LIFE_HASH = '1qyokr6';
+  function djb2(s) { let h = 5381; for (let i = 0; i < s.length; i++) h = ((h * 33) ^ s.charCodeAt(i)) >>> 0; return h.toString(36); }
+  function showLife() {
+    document.getElementById('life-lock').style.display = 'none';
+    document.getElementById('life-tools').style.display = '';
+  }
+  function lifeUnlock() {
+    const v = document.getElementById('life-pwd').value;
+    if (djb2(v) === LIFE_HASH) {
+      sessionStorage.setItem('life-ok', '1');
+      showLife();
+    } else {
+      document.getElementById('life-err').style.display = 'block';
+    }
+  }
+  document.getElementById('life-pwd').addEventListener('keydown', e => { if (e.key === 'Enter') lifeUnlock(); });
+  if (sessionStorage.getItem('life-ok') === '1') showLife();
+</script>
+</body>
+</html>
