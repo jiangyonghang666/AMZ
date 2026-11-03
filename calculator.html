@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cellipse cx='27' cy='42' rx='9' ry='6' fill='%235b4b45' transform='rotate(-25 27 42)'/%3E%3Cellipse cx='73' cy='42' rx='9' ry='6' fill='%235b4b45' transform='rotate(25 73 42)'/%3E%3Cg fill='%23ffffff' stroke='%23ddd7cd' stroke-width='2'%3E%3Ccircle cx='50' cy='22' r='12'/%3E%3Ccircle cx='37' cy='27' r='11'/%3E%3Ccircle cx='63' cy='27' r='11'/%3E%3Ccircle cx='33' cy='38' r='10'/%3E%3Ccircle cx='67' cy='38' r='10'/%3E%3Ccircle cx='36' cy='66' r='12'/%3E%3Ccircle cx='50' cy='62' r='13'/%3E%3Ccircle cx='64' cy='66' r='12'/%3E%3Ccircle cx='42' cy='77' r='10'/%3E%3Ccircle cx='58' cy='77' r='10'/%3E%3C/g%3E%3Cellipse cx='50' cy='40' rx='17' ry='16' fill='%235b4b45'/%3E%3Ccircle cx='50' cy='24' r='8' fill='%23ffffff'/%3E%3Ccircle cx='43.5' cy='41' r='3.6' fill='%23ffffff'/%3E%3Ccircle cx='56.5' cy='41' r='3.6' fill='%23ffffff'/%3E%3Ccircle cx='44' cy='41.8' r='2' fill='%23302420'/%3E%3Ccircle cx='57' cy='41.8' r='2' fill='%23302420'/%3E%3Ccircle cx='44.6' cy='41' r='.7' fill='%23ffffff'/%3E%3Ccircle cx='57.6' cy='41' r='.7' fill='%23ffffff'/%3E%3Cellipse cx='50' cy='48.5' rx='2.2' ry='1.6' fill='%23907d6e'/%3E%3Cellipse cx='37' cy='47' rx='3.6' ry='2.2' fill='%23f4b8b8' opacity='.85'/%3E%3Cellipse cx='63' cy='47' rx='3.6' ry='2.2' fill='%23f4b8b8' opacity='.85'/%3E%3Cpath d='M46.5 52.5 Q50 55.5 53.5 52.5' stroke='%23ffffff' stroke-width='1.6' fill='none' stroke-linecap='round'/%3E%3Crect x='41' y='85' width='5' height='10' rx='2.5' fill='%235b4b45'/%3E%3Crect x='54' y='85' width='5' height='10' rx='2.5' fill='%235b4b45'/%3E%3C/svg%3E">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>万能计算器 · 江永航的工具站</title>
+<style>
+  :root {
+    --bg: #f6f7f9; --card: #fff; --text: #1f2933; --sub: #6b7280;
+    --border: #e5e7eb; --accent: #2563eb; --accent-soft: #eff6ff;
+    --ok: #16a34a; --ok-soft: #ecfdf3; --bad: #dc2626; --bad-soft: #fef2f2;
+    --warn: #d97706; --radius: 14px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.6;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 28px 20px 80px; }
+  a.back { font-size: 13px; color: var(--accent); text-decoration: none; }
+  h1 { font-size: 22px; margin: 10px 0 2px; }
+  .lead { color: var(--sub); font-size: 13px; margin-bottom: 18px; }
+
+  /* tabs */
+  .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .tabs button {
+    border: 1px solid var(--border); background: var(--card); color: var(--text);
+    padding: 8px 14px; border-radius: 999px; font-size: 13px; cursor: pointer;
+  }
+  .tabs button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  .calc { display: none; }
+  .calc.on { display: block; }
+  .panel { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; }
+  .panel h3 { font-size: 15px; margin-bottom: 4px; }
+  .panel .desc { font-size: 12px; color: var(--sub); margin-bottom: 14px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
+  .field label { display: block; font-size: 12px; color: var(--sub); margin-bottom: 4px; }
+  .field input, .field select {
+    width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px;
+    font-size: 14px; color: var(--text); outline: none; background: #fff;
+  }
+  .field input:focus { border-color: var(--accent); }
+
+  .results { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px; }
+  .res { border-radius: var(--radius); padding: 14px 16px; background: #f9fafb; border: 1px solid var(--border); }
+  .res .k { font-size: 12px; color: var(--sub); }
+  .res .v { font-size: 24px; font-weight: 700; margin-top: 2px; }
+  .res .n { font-size: 11px; color: var(--sub); margin-top: 2px; }
+  .res.good { background: var(--ok-soft); border-color: #bbe7c6; }
+  .res.bad  { background: var(--bad-soft); border-color: #f5c2c2; }
+  .v.good { color: var(--ok); } .v.bad { color: var(--bad); } .v.mid { color: var(--warn); }
+  .note { font-size: 12px; color: var(--sub); margin-top: 12px; }
+  .profbar {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: var(--accent-soft); border: 1px solid #dbeafe; border-radius: var(--radius);
+    padding: 12px 16px; margin-bottom: 20px; position: relative;
+  }
+  .profbar img#profile-img {
+    width: 40px; height: 40px; border-radius: 8px; object-fit: cover;
+    border: 1px solid var(--border); background: #fff; cursor: zoom-in; display: none;
+  }
+  .imgpop {
+    display: none; position: absolute; z-index: 50; top: 64px; left: 16px;
+    background: #fff; border: 1px solid var(--border); border-radius: 12px;
+    padding: 8px; box-shadow: 0 6px 18px rgba(0,0,0,.12);
+  }
+  .imgpop img { width: 180px; height: 180px; object-fit: contain; border-radius: 8px; display: block; }
+  .profbar b { font-size: 13px; }
+  .profbar select {
+    padding: 7px 10px; border: 1px solid var(--border); border-radius: 8px;
+    font-size: 13px; background: #fff; color: var(--text); outline: none; min-width: 220px;
+  }
+  .profbar .meta { font-size: 12px; color: var(--sub); }
+  .sb-row { display: grid; gap: 8px; align-items: end; margin-bottom: 8px; }
+  .sb-row .field label { font-size: 11px; }
+  .vrow { grid-template-columns: 1.4fr 1fr 1fr 32px; }
+  .prow2 { grid-template-columns: 1fr 0.9fr 0.9fr 32px; }
+  .vparams {
+    display: grid; grid-template-columns: 1.1fr 0.9fr 0.9fr 0.9fr;
+    gap: 8px; margin: 2px 0 10px; align-items: end;
+  }
+  .vparams .vname { font-size: 13px; font-weight: 500; padding: 8px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .vparams .field label { font-size: 11px; }
+  .btn { border: 1px solid var(--border); background: #fff; border-radius: 8px; padding: 6px 14px; font-size: 13px; cursor: pointer; color: var(--text); }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .del { border: none; background: none; color: var(--bad); cursor: pointer; font-size: 16px; padding: 8px 0; }
+  .tag { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 12px; }
+  .tag.promo { background: var(--bad-soft); color: var(--bad); }
+  .tag.norm { background: var(--ok-soft); color: var(--ok); }
+  table.rt { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .rt th, .rt td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--border); }
+  .rt th { color: var(--sub); font-weight: 500; font-size: 12px; }
+  .rt td.num, .rt th.num { text-align: right; }
+  .rt tr.total td { font-weight: 700; border-bottom: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="index.html">← 返回工具站</a>
+  <h1>🧮 万能计算器</h1>
+  <p class="lead">输入即算，数字自动记住。币种只影响显示符号，不影响计算。</p>
+
+  <div class="profbar">
+    <b>🛒 成本档案</b>
+    <img id="profile-img" alt="商品图" title="鼠标悬停看大图">
+    <select id="profile-op" style="min-width:130px"></select>
+    <select id="profile-parent" style="min-width:200px"></select>
+    <select id="profile-sel" style="min-width:260px"></select>
+    <span class="meta" id="profile-meta">先选运营人员，再选父商品和子 ASIN，成本自动填入（领星 ERP 近 30 天）</span>
+    <div class="imgpop" id="imgpop"><img id="imgpop-img" alt=""></div>
+  </div>
+
+  <div class="tabs" id="tabs">
+    <button data-t="c1" class="on">保本 ACOS</button>
+    <button data-t="c2">广告 ACOS 快算</button>
+    <button data-t="c3">出价反推 CPC</button>
+    <button data-t="c4">单件净利润</button>
+    <button data-t="c5">促销折扣评估</button>
+    <button data-t="c6">广告预算预估</button>
+    <button data-t="c7">运营节奏沙盘</button>
+  </div>
+
+  <!-- 1 保本 ACOS -->
+  <div class="calc on" id="c1">
+    <div class="panel">
+      <h3>成本与订单</h3>
+      <div class="desc">填日常数字，右边实时出结论。保本 ACOS = 单件毛利 ÷ 售价。</div>
+      <div class="grid">
+        <div class="field"><label>售价</label><input type="number" id="a_price" value="39.99" step="0.01"></div>
+        <div class="field"><label>采购成本/件</label><input type="number" id="a_cost" value="28" step="0.01"></div>
+        <div class="field"><label>FBA 配送费/件</label><input type="number" id="a_fba" value="9.5" step="0.01"></div>
+        <div class="field"><label>佣金率 %</label><input type="number" id="a_comm" value="15" step="0.1"></div>
+        <div class="field"><label>头程+其他/件</label><input type="number" id="a_extra" value="3" step="0.01"></div>
+        <div class="field"><label>广告花费（近期）</label><input type="number" id="a_spend" value="500" step="1"></div>
+        <div class="field"><label>广告订单数</label><input type="number" id="a_adorders" value="20" step="1"></div>
+        <div class="field"><label>总订单数（含自然）</label><input type="number" id="a_total" value="45" step="1"></div>
+      </div>
+    </div>
+    <div class="panel">
+      <h3>结论</h3>
+      <div class="results">
+        <div class="res"><div class="k">单件毛利</div><div class="v" id="r_margin">—</div><div class="n">扣佣金/FBA/采购/头程后</div></div>
+        <div class="res"><div class="k">保本 ACOS</div><div class="v" id="r_breakeven">—</div><div class="n">超过就亏，低于就赚</div></div>
+        <div class="res"><div class="k">实际 ACOS</div><div class="v" id="r_acos">—</div><div class="n">广告花费 ÷ 广告销售额</div></div>
+        <div class="res"><div class="k">实际 TACOS</div><div class="v" id="r_tacos">—</div><div class="n">广告费 ÷ 总销售额</div></div>
+        <div class="res"><div class="k">整体净利润</div><div class="v" id="r_profit">—</div><div class="n">全部订单毛利 − 广告费</div></div>
+      </div>
+      <div class="note" id="r_verdict"></div>
+    </div>
+  </div>
+
+  <!-- 2 快算 -->
+  <div class="calc" id="c2">
+    <div class="panel">
+      <h3>三个数出全部比率</h3>
+      <div class="desc">后台报表里抄三个数过来就行。</div>
+      <div class="grid">
+        <div class="field"><label>广告花费</label><input type="number" id="b_spend" value="500" step="1"></div>
+        <div class="field"><label>广告销售额</label><input type="number" id="b_adsales" value="1200" step="1"></div>
+        <div class="field"><label>总销售额（含自然）</label><input type="number" id="b_totalsales" value="2500" step="1"></div>
+      </div>
+    </div>
+    <div class="panel">
+      <h3>结论</h3>
+      <div class="results">
+        <div class="res"><div class="k">ACOS</div><div class="v" id="q_acos">—</div><div class="n">广告花费 ÷ 广告销售额</div></div>
+        <div class="res"><div class="k">TACOS</div><div class="v" id="q_tacos">—</div><div class="n">广告花费 ÷ 总销售额</div></div>
+        <div class="res"><div class="k">ROAS</div><div class="v" id="q_roas">—</div><div class="n">广告销售额 ÷ 花费</div></div>
+        <div class="res"><div class="k">自然占比</div><div class="v" id="q_organic">—</div><div class="n">(总销售−广告销售) ÷ 总销售</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3 CPC 反推 -->
+  <div class="calc" id="c3">
+    <div class="panel">
+      <h3>给定目标 ACOS，算最多能出多少 CPC</h3>
+      <div class="desc">开新广告、调竞价前先算这条线，别超。</div>
+      <div class="grid">
+        <div class="field"><label>客单价</label><input type="number" id="c_price" value="39.99" step="0.01"></div>
+        <div class="field"><label>转化率 CVR %</label><input type="number" id="c_cvr" value="10" step="0.1"></div>
+        <div class="field"><label>目标 ACOS %</label><input type="number" id="c_tacos" value="25" step="1"></div>
+        <div class="field"><label>当前实际 CPC</label><input type="number" id="c_cpc" value="1.2" step="0.01"></div>
+      </div>
+    </div>
+    <div class="panel">
+      <h3>结论</h3>
+      <div class="results">
+        <div class="res"><div class="k">可承受 CPC 上限</div><div class="v" id="e_cpc">—</div><div class="n">客单价 × CVR × 目标ACOS</div></div>
+        <div class="res"><div class="k">当前 CPC 对应 ACOS</div><div class="v" id="e_acos">—</div><div class="n">按当前转化率算</div></div>
+        <div class="res"><div class="k">每单广告成本</div><div class="v" id="e_cpa">—</div><div class="n">CPC ÷ CVR</div></div>
+        <div class="res"><div class="k">出价空间</div><div class="v" id="e_room">—</div><div class="n">当前 CPC 距上限</div></div>
+      </div>
+      <div class="note" id="e_verdict"></div>
+    </div>
+  </div>
+
+  <!-- 4 单件净利 -->
+  <div class="calc" id="c4">
+    <div class="panel">
+      <h3>全口径单件利润（含折扣与退货损耗）</h3>
+      <div class="desc">算的是「长期平均每卖一件兜里剩多少」。</div>
+      <div class="grid">
+        <div class="field"><label>售价</label><input type="number" id="d_price" value="39.99" step="0.01"></div>
+        <div class="field"><label>促销折扣 %</label><input type="number" id="d_disc" value="0" step="1"></div>
+        <div class="field"><label>佣金率 %</label><input type="number" id="d_comm" value="15" step="0.1"></div>
+        <div class="field"><label>FBA 配送费</label><input type="number" id="d_fba" value="9.5" step="0.01"></div>
+        <div class="field"><label>采购成本</label><input type="number" id="d_cost" value="28" step="0.01"></div>
+        <div class="field"><label>头程运费</label><input type="number" id="d_ship" value="3" step="0.01"></div>
+        <div class="field"><label>退货率 %</label><input type="number" id="d_ret" value="5" step="0.5"></div>
+      </div>
+    </div>
+    <div class="panel">
+      <h3>结论</h3>
+      <div class="results">
+        <div class="res"><div class="k">折后售价</div><div class="v" id="p_netprice">—</div><div class="n">售价 × (1−折扣)</div></div>
+        <div class="res"><div class="k">退货货损/件</div><div class="v" id="p_retloss">—</div><div class="n">退货率 × (采购+头程)</div></div>
+        <div class="res"><div class="k">单件净利润</div><div class="v" id="p_profit">—</div><div class="n">含退货损耗</div></div>
+        <div class="res"><div class="k">净利率</div><div class="v" id="p_rate">—</div><div class="n">净利 ÷ 折后售价</div></div>
+      </div>
+      <div class="note" id="p_verdict"></div>
+    </div>
+  </div>
+
+  <!-- 5 促销评估 -->
+  <div class="calc" id="c5">
+    <div class="panel">
+      <h3>降价/做促销到底划不划算</h3>
+      <div class="desc">核心问题：折后日销要涨到原来的多少倍才不亏？</div>
+      <div class="grid">
+        <div class="field"><label>现价</label><input type="number" id="f_price" value="39.99" step="0.01"></div>
+        <div class="field"><label>折后价/Coupon 后实付</label><input type="number" id="f_newprice" value="34.99" step="0.01"></div>
+        <div class="field"><label>单件成本合计</label><input type="number" id="f_cost" value="40.5" step="0.01"></div>
+        <div class="field"><label>佣金率 %</label><input type="number" id="f_comm" value="15" step="0.1"></div>
+        <div class="field"><label>当前日销</label><input type="number" id="f_daily" value="15" step="1"></div>
+      </div>
+    </div>
+    <div class="panel">
+      <h3>结论</h3>
+      <div class="results">
+        <div class="res"><div class="k">现价单件利润</div><div class="v" id="s_old">—</div><div class="n">现价下每件赚</div></div>
+        <div class="res"><div class="k">折后单件利润</div><div class="v" id="s_new">—</div><div class="n">折后每件赚</div></div>
+        <div class="res"><div class="k">保本日销倍数</div><div class="v" id="s_lift">—</div><div class="n">日销至少变成几倍</div></div>
+        <div class="res"><div class="k">保本日销量</div><div class="v" id="s_target">—</div><div class="n">折后每天至少卖</div></div>
+      </div>
+      <div class="note" id="s_verdict"></div>
+    </div>
+  </div>
+
+  <!-- 6 预算预估 -->
+  <div class="calc" id="c6">
+    <div class="panel">
+      <h3>按预算反推能带来多少单</h3>
+      <div class="desc">开广告前预估：预算、CPC、转化率三个数定结果。</div>
+      <div class="grid">
+        <div class="field"><label>日预算</label><input type="number" id="g_budget" value="50" step="1"></div>
+        <div class="field"><label>预估 CPC</label><input type="number" id="g_cpc" value="1.2" step="0.01"></div>
+        <div class="field"><label>转化率 %</label><input type="number" id="g_cvr" value="10" step="0.1"></div>
+        <div class="field"><label>客单价</label><input type="number" id="g_price" value="39.99" step="0.01"></div>
+        <div class="field"><label>单件毛利</label><input type="number" id="g_margin" value="8" step="0.01"></div>
+      </div>
+    </div>
+    <div class="panel">
+      <h3>结论</h3>
+      <div class="results">
+        <div class="res"><div class="k">预计点击数/日</div><div class="v" id="o_clicks">—</div><div class="n">预算 ÷ CPC</div></div>
+        <div class="res"><div class="k">预计订单/日</div><div class="v" id="o_orders">—</div><div class="n">点击 × CVR</div></div>
+        <div class="res"><div class="k">预计 ACOS</div><div class="v" id="o_acos">—</div><div class="n">预算 ÷ 广告销售额</div></div>
+        <div class="res"><div class="k">广告净贡献/日</div><div class="v" id="o_net">—</div><div class="n">订单毛利 − 预算</div></div>
+      </div>
+      <div class="note" id="o_verdict"></div>
+    </div>
+  </div>
+
+  <!-- 7 清库存沙盘 -->
+  <div class="calc" id="c7">
+    <div class="panel">
+      <h3>变体与库存</h3>
+      <div class="desc">几个子体就加几行，成本可以不一样。</div>
+      <div class="grid" style="grid-template-columns: 1fr 1fr; margin-bottom: 10px;">
+        <div class="field"><label>佣金率 %（全局）</label><input type="number" id="sb_comm" step="0.1" value="11.8"></div>
+      </div>
+      <div id="sb-variants"></div>
+      <button class="btn" id="sb-add-variant">＋ 添加变体</button>
+    </div>
+
+    <div class="panel">
+      <h3>促销时间线（按顺序执行）</h3>
+      <div class="desc">一行一个阶段，天数和类型整段共用；阶段内每个变体一行，各自填价格、日销、日广告。不想让某个变体参与该阶段，把它的日销填 0 即可。顺序随意，库存清零自动截断。</div>
+      <div id="sb-phases"></div>
+      <button class="btn" id="sb-add-phase">＋ 添加阶段</button>
+      <button class="btn" id="sb-add-cycle" style="margin-left:8px">＋ 一轮「正常7天+促销3天」循环</button>
+    </div>
+
+    <div class="panel">
+      <h3>沙盘结论</h3>
+      <div id="sb-result"></div>
+      <div class="note" id="sb-notes"></div>
+    </div>
+  </div>
+
+  <p class="note">数字只存在你自己的浏览器里，换电脑不会跟过去。成本档案数据来自领星 ERP 近 30 天报表，成本变了找小策重新拉一次。</p>
+</div>
+
+<script src="cost-profiles.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const num = id => { const v = parseFloat($(id).value); return isNaN(v) ? 0 : v; };
+const pct = v => isNaN(v) || !isFinite(v) ? '—' : v.toFixed(1) + '%';
+const money = v => isNaN(v) || !isFinite(v) ? '—' : v.toFixed(2);
+let SYM = '$';
+
+// 币种
+const symSel = document.createElement('select');
+symSel.style.cssText = 'padding:4px 8px;border:1px solid var(--border);border-radius:8px;font-size:13px;margin-left:8px';
+symSel.innerHTML = '<option value="$">CAD $</option><option value="US$">USD $</option><option value="£">GBP £</option><option value="€">EUR €</option><option value="¥">CNY ¥</option>';
+symSel.onchange = () => { SYM = symSel.value; localStorage.setItem('calc-sym', SYM); runAll(); };
+document.querySelector('.lead').appendChild(symSel);
+
+// 标签页
+document.getElementById('tabs').addEventListener('click', e => {
+  if (!e.target.dataset.t) return;
+  document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b === e.target));
+  document.querySelectorAll('.calc').forEach(c => c.classList.toggle('on', c.id === e.target.dataset.t));
+  location.hash = e.target.dataset.t;
+});
+
+// 持久化
+const KEY = 'calc-universal-v1';
+function saveAll() {
+  const d = {};
+  document.querySelectorAll('input[type=number]').forEach(i => d[i.id] = i.value);
+  localStorage.setItem(KEY, JSON.stringify(d));
+}
+function loadAll() {
+  const d = JSON.parse(localStorage.getItem(KEY) || '{}');
+  Object.keys(d).forEach(id => { if ($(id)) $(id).value = d[id]; });
+}
+document.addEventListener('input', e => {
+  if (e.target.type === 'number' && !e.target.dataset.sb) { saveAll(); runAll(); }
+});
+
+const cls = (el, v) => { el.className = 'v ' + (v > 0 ? 'good' : v < 0 ? 'bad' : ''); };
+
+function calc1() {
+  const price = num('a_price'), cost = num('a_cost'), fba = num('a_fba'),
+        comm = num('a_comm')/100, extra = num('a_extra'),
+        spend = num('a_spend'), adO = num('a_adorders'), tO = num('a_total');
+  const margin = price - price*comm - fba - cost - extra;
+  const be = price > 0 ? margin/price*100 : NaN;
+  const adSales = adO * price, tSales = tO * price;
+  const acos = adSales > 0 ? spend/adSales*100 : NaN;
+  const tacos = tSales > 0 ? spend/tSales*100 : NaN;
+  const profit = margin * tO - spend;
+  $('r_margin').textContent = SYM + money(margin); cls($('r_margin'), margin);
+  $('r_breakeven').textContent = pct(be);
+  $('r_acos').textContent = pct(acos);
+  $('r_tacos').textContent = pct(tacos);
+  $('r_profit').textContent = SYM + money(profit); cls($('r_profit'), profit);
+  $('r_profit').className = 'v ' + (profit >= 0 ? 'good' : 'bad');
+  if (isFinite(acos) && isFinite(be)) {
+    const diff = (acos - be).toFixed(1);
+    $('r_verdict').textContent = acos <= be
+      ? `实际 ACOS ${acos.toFixed(1)}% 低于保本线 ${be.toFixed(1)}%，广告在赚钱，还差 ${diff.replace('-','')} 个点安全垫。`
+      : `实际 ACOS ${acos.toFixed(1)}% 高于保本线 ${be.toFixed(1)}%，广告整体在亏，每单广告亏约 ${SYM}${money(spend/Math.max(adO,1) - margin)}。`;
+  } else $('r_verdict').textContent = '';
+}
+
+function calc2() {
+  const sp = num('b_spend'), as = num('b_adsales'), ts = num('b_totalsales');
+  $('q_acos').textContent = pct(as > 0 ? sp/as*100 : NaN);
+  $('q_tacos').textContent = pct(ts > 0 ? sp/ts*100 : NaN);
+  $('q_roas').textContent = sp > 0 ? (as/sp).toFixed(2) + 'x' : '—';
+  $('q_organic').textContent = pct(ts > 0 ? (ts-as)/ts*100 : NaN);
+}
+
+function calc3() {
+  const price = num('c_price'), cvr = num('c_cvr')/100, tgt = num('c_tacos')/100, cpc = num('c_cpc');
+  const maxCpc = price * cvr * tgt;
+  $('e_cpc').textContent = SYM + money(maxCpc);
+  $('e_acos').textContent = pct(price > 0 && cvr > 0 ? cpc/(price*cvr)*100 : NaN);
+  $('e_cpa').textContent = SYM + money(cvr > 0 ? cpc/cvr : NaN);
+  const room = maxCpc - cpc;
+  $('e_room').textContent = SYM + money(room); cls($('e_room'), room);
+  $('e_verdict').textContent = isFinite(maxCpc) && maxCpc > 0
+    ? (cpc <= maxCpc
+      ? `当前 CPC ${SYM}${cpc} 在安全线内，理论上还有 ${SYM}${money(room)} 的加价空间（不建议一次加满）。`
+      : `当前 CPC ${SYM}${cpc} 已超上限 ${SYM}${money(maxCpc)}，按 ${num('c_cvr')}% 转化率跑下去 ACOS 必超标，先降竞价或提转化。`)
+    : '';
+}
+
+function calc4() {
+  const price = num('d_price'), disc = num('d_disc')/100, comm = num('d_comm')/100,
+        fba = num('d_fba'), cost = num('d_cost'), ship = num('d_ship'), ret = num('d_ret')/100;
+  const netPrice = price * (1 - disc);
+  const retLoss = ret * (cost + ship);
+  const profit = netPrice * (1 - comm) - fba - cost - ship - retLoss;
+  $('p_netprice').textContent = SYM + money(netPrice);
+  $('p_retloss').textContent = SYM + money(retLoss);
+  $('p_profit').textContent = SYM + money(profit); cls($('p_profit'), profit);
+  $('p_rate').textContent = pct(netPrice > 0 ? profit/netPrice*100 : NaN);
+  $('p_verdict').textContent = profit < 0
+    ? '按这个成本结构每卖一件都在亏，先别加预算，查采购价和头程。'
+    : `扣掉退货损耗后每件净赚 ${SYM}${money(profit)}。广告 TACOS 控制在 ${pct(netPrice>0 ? profit/netPrice*100 : NaN)} 以内就不亏。`;
+}
+
+function calc5() {
+  const p0 = num('f_price'), p1 = num('f_newprice'), cost = num('f_cost'),
+        comm = num('f_comm')/100, daily = num('f_daily');
+  const m0 = p0*(1-comm) - cost, m1 = p1*(1-comm) - cost;
+  const lift = m1 > 0 ? m0/m1 : NaN;
+  $('s_old').textContent = SYM + money(m0); cls($('s_old'), m0);
+  $('s_new').textContent = SYM + money(m1); cls($('s_new'), m1);
+  $('s_lift').textContent = isFinite(lift) ? lift.toFixed(2) + 'x' : '—';
+  $('s_target').textContent = isFinite(lift) ? Math.ceil(daily * lift) + ' 单' : '—';
+  $('s_verdict').textContent = m1 <= 0
+    ? '折后单件已经不赚钱，这个折扣力度不能做。'
+    : isFinite(lift)
+      ? `折后利润率降到原来的 ${((m1/m0)*100).toFixed(0)}%，日销至少要从 ${daily} 涨到 ${Math.ceil(daily*lift)} 单才不亏；想真正赚到更多，目标定在 ${Math.ceil(daily*lift*1.3)} 单以上。`
+      : '';
+}
+
+function calc6() {
+  const bud = num('g_budget'), cpc = num('g_cpc'), cvr = num('g_cvr')/100,
+        price = num('g_price'), margin = num('g_margin');
+  const clicks = cpc > 0 ? bud/cpc : NaN;
+  const orders = isFinite(clicks) ? clicks * cvr : NaN;
+  const acos = orders > 0 && price > 0 ? bud/(orders*price)*100 : NaN;
+  const net = isFinite(orders) ? orders*margin - bud : NaN;
+  $('o_clicks').textContent = isFinite(clicks) ? Math.floor(clicks) + ' 次' : '—';
+  $('o_orders').textContent = isFinite(orders) ? orders.toFixed(1) + ' 单' : '—';
+  $('o_acos').textContent = pct(acos);
+  $('o_net').textContent = SYM + money(net); cls($('o_net'), net);
+  $('o_verdict').textContent = isFinite(net)
+    ? (net >= 0
+      ? `这套参数下广告自身能打平并多赚 ${SYM}${money(net)}/天。`
+      : `这套参数下广告每天净亏 ${SYM}${money(-net)}，要么压 CPC，要么靠它拉的自然排名把整体 TACOS 摊下来。`)
+    : '';
+}
+
+function runAll() { calc1(); calc2(); calc3(); calc4(); calc5(); calc6(); runSB(); }
+
+// ===== 清库存沙盘：多变体 + 自由时间线 =====
+const SB_KEY = 'calc-sandbox-v1';
+let SB = null;
+
+function sbSeed() {
+  const seed = { comm: 11.8, variants: [], phases: [] };
+  const prof = window.COST_PROFILES && window.COST_PROFILES['B0FPQYF2ZH'];
+  const f = prof ? prof.fields : {};
+  seed.comm = f.n_comm || 11.8;
+  seed.variants = [{ name: '雪挡 主变体', units: f.n_units || 1200, cost: f.n_cost || 12.92 }];
+  seed.phases = [
+    { name: '促销冲刺', type: 'promo', days: f.n_promo_days || 30,
+      params: { 0: { price: f.n_promo_price || 21.99, daily: f.n_promo_daily || 12, ads: f.n_promo_ads || 40 } } },
+    { name: '日常销售', type: 'norm', days: 60,
+      params: { 0: { price: f.n_norm_price || 25.99, daily: f.n_norm_daily || 2, ads: f.n_norm_ads || 15 } } }
+  ];
+  return seed;
+}
+
+function sbLoad() {
+  try {
+    const s = JSON.parse(localStorage.getItem(SB_KEY));
+    if (s && s.variants && s.phases) return s;
+  } catch (e) {}
+  return sbSeed();
+}
+function sbSave() { localStorage.setItem(SB_KEY, JSON.stringify(SB)); }
+
+const sbField = (label, id, val) =>
+  `<div class="field"><label>${label}</label><input type="number" step="0.01" id="${id}" value="${val}"></div>`;
+
+function renderSB() {
+  const vWrap = $('sb-variants'), pWrap = $('sb-phases');
+  vWrap.innerHTML = SB.variants.map((v, i) =>
+    `<div class="sb-row vrow">
+      <div class="field"><label>变体名称</label><input type="text" data-sb="v:${i}:name" value="${v.name || ''}"></div>
+      <div class="field"><label>库存（个）</label><input type="number" step="1" data-sb="v:${i}:units" value="${v.units}"></div>
+      <div class="field"><label>单件成本</label><input type="number" step="0.01" data-sb="v:${i}:cost" value="${v.cost}"></div>
+      <button class="del" data-delv="${i}" title="删除">✕</button>
+    </div>`).join('');
+  pWrap.innerHTML = SB.phases.map((p, i) => {
+    if (!p.params) {
+      const targets = Array.isArray(p.vs) ? p.vs : (p.v === 'all' ? SB.variants.map((_, j) => j) : [ +p.v ]);
+      p.params = {};
+      SB.variants.forEach((_, vi) => {
+        p.params[vi] = targets.includes(vi)
+          ? { price: p.price || 21.99, daily: p.daily || 0, ads: p.ads || 0 }
+          : { price: p.price || 21.99, daily: 0, ads: 0 };
+      });
+    }
+    const head = `<div class="sb-row prow2">
+      <div class="field"><label>阶段 ${i + 1}</label><input type="text" data-sb="p:${i}:name" value="${p.name || ''}" placeholder="例：黑五大促 / 日常销售"></div>
+      <div class="field"><label>类型</label><select data-sb="p:${i}:type">
+        <option value="promo" ${p.type === 'promo' ? 'selected' : ''}>促销</option>
+        <option value="norm" ${p.type === 'norm' ? 'selected' : ''}>正常</option></select></div>
+      <div class="field"><label>天数</label><input type="number" step="1" data-sb="p:${i}:days" value="${p.days}"></div>
+      <button class="del" data-delp="${i}" title="删除">✕</button>
+    </div>`;
+    const lines = SB.variants.map((v, vi) => {
+      const q = p.params[vi] || (p.params[vi] = { price: p.price || 21.99, daily: 0, ads: 0 });
+      return `<div class="vparams">
+        <div class="vname">${v.name || '变体' + (vi + 1)}</div>
+        <div class="field"><label>价格</label><input type="number" step="0.01" data-sb="pp:${i}:${vi}:price" value="${q.price}"></div>
+        <div class="field"><label>日销/天</label><input type="number" step="1" data-sb="pp:${i}:${vi}:daily" value="${q.daily}"></div>
+        <div class="field"><label>日广告费</label><input type="number" step="1" data-sb="pp:${i}:${vi}:ads" value="${q.ads}"></div>
+      </div>`;
+    }).join('');
+    return head + lines;
+  }).join('');
+  $('sb_comm').value = SB.comm;
+
+  vWrap.querySelectorAll('[data-sb]').forEach(el => el.addEventListener('input', () => {
+    const [k, i, f] = el.dataset.sb.split(':');
+    SB.variants[+i][f] = el.value; sbSave(); runSB();
+  }));
+  vWrap.querySelectorAll('[data-delv]').forEach(el => el.addEventListener('click', () => {
+    SB.variants.splice(+el.dataset.delv, 1); sbSave(); renderSB();
+  }));
+  pWrap.querySelectorAll('select[data-sb]').forEach(el => el.addEventListener('change', () => {
+    const [k, i, f] = el.dataset.sb.split(':');
+    SB.phases[+i][f] = el.value; sbSave(); runSB();
+  }));
+  pWrap.querySelectorAll('input[data-sb^="pp:"]').forEach(el => el.addEventListener('input', () => {
+    const [, i, vi, f] = el.dataset.sb.split(':');
+    const p = SB.phases[+i];
+    p.params[vi] = p.params[vi] || { price: 0, daily: 0, ads: 0 };
+    p.params[vi][f] = el.value; sbSave(); runSB();
+  }));
+  pWrap.querySelectorAll('input[data-sb^="p:"]').forEach(el => el.addEventListener('input', () => {
+    const [k, i, f] = el.dataset.sb.split(':');
+    SB.phases[+i][f] = el.value; sbSave(); runSB();
+  }));
+  pWrap.querySelectorAll('[data-delp]').forEach(el => el.addEventListener('click', () => {
+    SB.phases.splice(+el.dataset.delp, 1); sbSave(); renderSB();
+  }));
+  runSB();
+}
+
+function runSB() {
+  const comm = (parseFloat($('sb_comm').value) || 0) / 100;
+  SB.comm = $('sb_comm').value;
+  const remaining = {}, totalInv = {};
+  SB.variants.forEach((v, i) => { remaining[i] = +v.units || 0; totalInv[i] = +v.units || 0; });
+
+  let totalProfit = 0, totalAds = 0, totalDays = 0, totalSold = 0;
+  const soldBy = {};
+  let rows = '';
+
+  SB.phases.forEach((p, i) => {
+    if (!p.params) {
+      p.params = {};
+      SB.variants.forEach((_, vi) => p.params[vi] = { price: 21.99, daily: 0, ads: 0 });
+    }
+    const days = +p.days || 0;
+    let sold = 0, ads = 0, profit = 0, effDays = 0, truncated = false;
+    const partNames = [];
+    SB.variants.forEach((v, vi) => {
+      const q = p.params[vi] || { price: 0, daily: 0, ads: 0 };
+      const price = +q.price || 0, daily = +q.daily || 0, adsD = +q.ads || 0;
+      const cap = remaining[vi], want = daily * days, s = Math.min(want, cap);
+      if (daily > 0 && want > cap) truncated = true;
+      remaining[vi] = cap - s;
+      sold += s; soldBy[vi] = (soldBy[vi] || 0) + s;
+      const ed = daily > 0 ? s / daily : 0;
+      ads += adsD * ed;
+      profit += s * (price * (1 - comm) - (+v.cost || 0)) - adsD * ed;
+      effDays = Math.max(effDays, ed);
+      if (daily > 0) partNames.push(v.name || '变体' + (vi + 1));
+    });
+    totalProfit += profit; totalAds += ads; totalSold += sold; totalDays += days;
+    const tag = p.type === 'promo' ? '<span class="tag promo">促销</span>' : '<span class="tag norm">正常</span>';
+    const pName = p.name ? p.name + ' · ' : '';
+    const vName = partNames.length === 0 ? '<span style="color:var(--sub)">全部日销为 0</span>'
+      : partNames.length === SB.variants.length ? '全部变体' : partNames.join('、');
+    rows += `<tr>
+      <td>${pName}${i + 1} ${tag}</td><td>${vName}</td>
+      <td class="num">${days}${truncated ? '→' + Math.ceil(effDays) : ''}</td>
+      <td class="num">${Math.round(sold)}</td><td class="num">${SYM}${money(ads)}</td>
+      <td class="num" style="color:${profit >= 0 ? 'var(--ok)' : 'var(--bad)'}">${SYM}${money(profit)}</td></tr>`;
+  });
+
+  let vRows = '';
+  SB.variants.forEach((v, i) => {
+    const left = remaining[i], s = soldBy[i] || 0;
+    vRows += `<tr><td>${v.name || '变体' + (i + 1)}</td>
+      <td class="num">${totalInv[i]}</td><td class="num">${Math.round(s)}</td>
+      <td class="num" style="color:${left > 0 ? 'var(--warn)' : 'var(--ok)'}">${Math.round(left)}</td></tr>`;
+  });
+
+  const anyLeft = SB.variants.some((_, i) => remaining[i] > 0);
+  $('sb-result').innerHTML = `
+    <table class="rt">
+      <tr><th>阶段</th><th>变体（各自价格/日销见上方输入）</th><th class="num">天数</th><th class="num">卖出</th><th class="num">广告</th><th class="num">利润</th></tr>
+      ${rows || '<tr><td colspan="6" style="color:var(--sub)">先添加变体和阶段</td></tr>'}
+      <tr class="total"><td colspan="3">合计（计划 ${Math.round(totalDays)} 天）</td><td class="num">${Math.round(totalSold)}</td><td class="num">${SYM}${money(totalAds)}</td>
+      <td class="num" style="color:${totalProfit >= 0 ? 'var(--ok)' : 'var(--bad)'}">${SYM}${money(totalProfit)}</td></tr>
+    </table>
+    <table class="rt" style="margin-top:14px">
+      <tr><th>变体清库进度</th><th class="num">库存</th><th class="num">已卖出</th><th class="num">剩余</th></tr>
+      ${vRows}
+    </table>`;
+
+  const notes = [];
+  if (anyLeft) notes.push('时间线走完还剩库存：继续加阶段、加大日销，或拉长促销天数。');
+  else if (totalSold > 0) notes.push('按这条时间线库存能全部清完。');
+  SB.phases.forEach((p, i) => {
+    const params = p.params || {};
+    SB.variants.forEach((v, vi) => {
+      const q = params[vi] || { price: 0, daily: 0, ads: 0 };
+      const vname = v.name || '变体' + (vi + 1);
+      if (p.type === 'promo' && (+q.daily || 0) > 0 && (+q.price || 0) * (1 - comm) < (+v.cost || 0))
+        notes.push(`阶段 ${i + 1} 的 ${vname} 促销价连成本都盖不住，属于明亏换排名，确认是有意为之。`);
+      if ((+q.daily || 0) === 0 && (+q.ads || 0) > 0 && (+p.days || 0) > 0)
+        notes.push(`阶段 ${i + 1} 的 ${vname} 日销为 0 但有广告费，钱白烧。`);
+    });
+  });
+  $('sb-notes').textContent = notes.join(' ');
+}
+
+$('sb-add-variant').addEventListener('click', () => {
+  SB.variants.push({ name: '变体' + (SB.variants.length + 1), units: 100, cost: 12.92 });
+  sbSave(); renderSB();
+});
+$('sb-add-phase').addEventListener('click', () => {
+  const last = SB.phases[SB.phases.length - 1];
+  const params = {};
+  SB.variants.forEach((_, vi) => {
+    const q = last && last.params && last.params[vi] ? last.params[vi] : { price: 21.99, daily: 3, ads: 10 };
+    params[vi] = { price: q.price, daily: q.daily, ads: q.ads };
+  });
+  SB.phases.push({ name: '', type: last && last.type === 'promo' ? 'norm' : 'promo', days: 7, params });
+  sbSave(); renderSB();
+});
+$('sb-add-cycle').addEventListener('click', () => {
+  const last = SB.phases[SB.phases.length - 1];
+  const params = {};
+  SB.variants.forEach((_, vi) => {
+    const q = last && last.params && last.params[vi] ? last.params[vi] : { price: 21.99, daily: 3, ads: 10 };
+    params[vi] = { price: q.price, daily: q.daily, ads: q.ads };
+  });
+  SB.phases.push({ name: '', type: 'norm', days: 7, params: JSON.parse(JSON.stringify(params)) });
+  SB.phases.push({ name: '', type: 'promo', days: 3, params: JSON.parse(JSON.stringify(params)) });
+  sbSave(); renderSB();
+});
+$('sb_comm').addEventListener('input', () => { SB.comm = $('sb_comm').value; sbSave(); runSB(); });
+
+SB = sbLoad();
+renderSB();
+
+// 成本档案：运营人员 → 父商品（带站点） → 子 ASIN 三级选择
+const profSel = $('profile-sel'), profParent = $('profile-parent'), profOp = $('profile-op');
+const GROUPS = {};
+const OPERATORS = {};
+if (window.COST_PROFILES) {
+  Object.entries(window.COST_PROFILES).forEach(([asin, p]) => {
+    const g = p.group || '未分组';
+    (GROUPS[g] = GROUPS[g] || { name: p.groupName || '未分组', children: [] }).children.push(asin);
+    (p.operators || []).forEach(o => (OPERATORS[o] = OPERATORS[o] || new Set()).add(o));
+  });
+}
+const OP_SITES = {};
+Object.entries(window.COST_PROFILES || {}).forEach(([asin, p]) => {
+  (p.operators || []).forEach(o => {
+    OP_SITES[o] = OP_SITES[o] || new Set();
+    (p.sites || []).forEach(s => OP_SITES[o].add(s));
+  });
+});
+function fillOperators() {
+  profOp.innerHTML = '';
+  const ops = Object.keys(OPERATORS).sort((a, b) => {
+    const va = Math.max(...Object.values(window.COST_PROFILES).filter(p => (p.operators || []).includes(a)).map(p => p.vol || 0));
+    const vb = Math.max(...Object.values(window.COST_PROFILES).filter(p => (p.operators || []).includes(b)).map(p => p.vol || 0));
+    return vb - va;
+  });
+  ops.forEach(o => {
+    const opt = document.createElement('option');
+    opt.value = o;
+    const sites = [...(OP_SITES[o] || [])].join('/');
+    opt.textContent = sites ? `${o}（${sites}）` : o;
+    profOp.appendChild(opt);
+  });
+}
+function fillParents() {
+  const op = profOp.value;
+  profParent.innerHTML = '';
+  const parents = Object.entries(GROUPS).map(([g, o]) => {
+    const kids = o.children.filter(a => (window.COST_PROFILES[a].operators || []).includes(op));
+    const sites = new Set();
+    kids.forEach(a => (window.COST_PROFILES[a].sites || []).forEach(s => sites.add(s)));
+    const max = Math.max(...kids.map(a => window.COST_PROFILES[a].vol || 0));
+    return { g, name: o.name, sites: [...sites], max, n: kids.length };
+  }).filter(o => o.n > 0).sort((a, b) => b.max - a.max);
+  parents.forEach(o => {
+    const opt = document.createElement('option');
+    opt.value = o.g;
+    opt.textContent = o.sites.length ? `${o.name}（${o.sites.join('/')}）` : o.name;
+    profParent.appendChild(opt);
+  });
+}
+function fillChildren(group) {
+  const op = profOp.value;
+  profSel.innerHTML = '';
+  const kids = ((GROUPS[group] || {}).children || []).filter(a => (window.COST_PROFILES[a].operators || []).includes(op))
+    .slice().sort((a, b) => (window.COST_PROFILES[b].vol || 0) - (window.COST_PROFILES[a].vol || 0));
+  kids.forEach(asin => {
+    const p = window.COST_PROFILES[asin];
+    const opt = document.createElement('option');
+    opt.value = asin;
+    opt.textContent = `${asin} ｜ ${(p.name || '').slice(0, 30)}`;
+    profSel.appendChild(opt);
+  });
+  if (kids.length) applyProfile(kids[0]);
+}
+function applyProfile(asin) {
+  const p = window.COST_PROFILES && window.COST_PROFILES[asin];
+  const pimg = $('profile-img');
+  if (!p) {
+    pimg.style.display = 'none';
+    $('imgpop').style.display = 'none';
+    $('profile-meta').textContent = '先选运营人员，再选父商品和子 ASIN，成本自动填入（领星 ERP 近 30 天）';
+    return;
+  }
+  if (p.img) { pimg.src = p.img; pimg.style.display = 'inline-block'; }
+  Object.keys(p.fields).forEach(id => { if ($(id)) $(id).value = p.fields[id]; });
+  if (p.currency) { SYM = p.currency; if ([...symSel.options].some(o => o.value === SYM)) symSel.value = SYM; localStorage.setItem('calc-sym', SYM); }
+  $('profile-meta').textContent = '已填入：' + p.meta + '（2026-09-28 ~ 2026-10-27）';
+  saveAll();
+  runAll();
+}
+profOp.addEventListener('change', () => { fillParents(); if (profParent.options.length) fillChildren(profParent.value); });
+profParent.addEventListener('change', () => fillChildren(profParent.value));
+profSel.addEventListener('change', () => applyProfile(profSel.value));
+if (Object.keys(OPERATORS).length) {
+  fillOperators();
+  fillParents();
+  if (profParent.options.length) fillChildren(profParent.value);
+}
+
+// 悬停小图看大图
+(function () {
+  const pimg = $('profile-img'), pop = $('imgpop'), popImg = $('imgpop-img');
+  pimg.addEventListener('mouseenter', () => {
+    const big = window.COST_PROFILES && window.COST_PROFILES[profSel.value];
+    if (!big || !big.imgBig) return;
+    popImg.src = big.imgBig;
+    pop.style.display = 'block';
+  });
+  pimg.addEventListener('mouseleave', () => { pop.style.display = 'none'; });
+})();
+
+loadAll();
+SYM = localStorage.getItem('calc-sym') || '$';
+symSel.value = SYM;
+runAll();
+if (location.hash) {
+  const t = document.querySelector(`#tabs button[data-t="${location.hash.slice(1)}"]`);
+  if (t) t.click();
+}
+</script>
+</body>
+</html>
