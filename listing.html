@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cellipse cx='27' cy='42' rx='9' ry='6' fill='%235b4b45' transform='rotate(-25 27 42)'/%3E%3Cellipse cx='73' cy='42' rx='9' ry='6' fill='%235b4b45' transform='rotate(25 73 42)'/%3E%3Cg fill='%23ffffff' stroke='%23ddd7cd' stroke-width='2'%3E%3Ccircle cx='50' cy='22' r='12'/%3E%3Ccircle cx='37' cy='27' r='11'/%3E%3Ccircle cx='63' cy='27' r='11'/%3E%3Ccircle cx='33' cy='38' r='10'/%3E%3Ccircle cx='67' cy='38' r='10'/%3E%3Ccircle cx='36' cy='66' r='12'/%3E%3Ccircle cx='50' cy='62' r='13'/%3E%3Ccircle cx='64' cy='66' r='12'/%3E%3Ccircle cx='42' cy='77' r='10'/%3E%3Ccircle cx='58' cy='77' r='10'/%3E%3C/g%3E%3Cellipse cx='50' cy='40' rx='17' ry='16' fill='%235b4b45'/%3E%3Ccircle cx='50' cy='24' r='8' fill='%23ffffff'/%3E%3Ccircle cx='43.5' cy='41' r='3.6' fill='%23ffffff'/%3E%3Ccircle cx='56.5' cy='41' r='3.6' fill='%23ffffff'/%3E%3Ccircle cx='44' cy='41.8' r='2' fill='%23302420'/%3E%3Ccircle cx='57' cy='41.8' r='2' fill='%23302420'/%3E%3Ccircle cx='44.6' cy='41' r='.7' fill='%23ffffff'/%3E%3Ccircle cx='57.6' cy='41' r='.7' fill='%23ffffff'/%3E%3Cellipse cx='50' cy='48.5' rx='2.2' ry='1.6' fill='%23907d6e'/%3E%3Cellipse cx='37' cy='47' rx='3.6' ry='2.2' fill='%23f4b8b8' opacity='.85'/%3E%3Cellipse cx='63' cy='47' rx='3.6' ry='2.2' fill='%23f4b8b8' opacity='.85'/%3E%3Cpath d='M46.5 52.5 Q50 55.5 53.5 52.5' stroke='%23ffffff' stroke-width='1.6' fill='none' stroke-linecap='round'/%3E%3Crect x='41' y='85' width='5' height='10' rx='2.5' fill='%235b4b45'/%3E%3Crect x='54' y='85' width='5' height='10' rx='2.5' fill='%235b4b45'/%3E%3C/svg%3E">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Listing 文案检查 · 江永航的工具站</title>
+<style>
+  :root {
+    --bg: #f6f7f9; --card: #fff; --text: #1f2933; --sub: #6b7280;
+    --border: #e5e7eb; --accent: #2563eb; --accent-soft: #eff6ff;
+    --ok: #16a34a; --ok-soft: #ecfdf3; --bad: #dc2626; --bad-soft: #fef2f2;
+    --warn: #d97706; --warn-soft: #fffbeb; --radius: 14px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.6;
+  }
+  .wrap { max-width: 900px; margin: 0 auto; padding: 28px 20px 80px; }
+  a.back { font-size: 13px; color: var(--accent); text-decoration: none; }
+  h1 { font-size: 22px; margin: 10px 0 2px; }
+  .lead { color: var(--sub); font-size: 13px; margin-bottom: 18px; }
+
+  .panel, .block {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 18px; margin-bottom: 14px;
+  }
+  .panel h3, .block h3 { font-size: 15px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .block h3 .cnt { font-size: 12px; font-weight: 400; color: var(--sub); }
+  .field { margin-bottom: 12px; }
+  .field > label {
+    display: flex; align-items: baseline; gap: 8px;
+    font-size: 12px; color: var(--sub); margin-bottom: 5px;
+  }
+  .field > label .num { margin-left: auto; font-variant-numeric: tabular-nums; }
+  .field > label .num.over { color: var(--bad); font-weight: 600; }
+  input[type=text], textarea, select {
+    width: 100%; padding: 9px 11px; border: 1px solid var(--border); border-radius: 9px;
+    font-size: 14px; color: var(--text); background: #fff; outline: none;
+    font-family: inherit; line-height: 1.55;
+  }
+  textarea { resize: vertical; }
+  input[type=text]:focus, textarea:focus, select:focus { border-color: var(--accent); }
+  .opts { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; margin-bottom: 14px; }
+  .opts .field { margin: 0; }
+  .opts .field.grow { flex: 1 1 160px; }
+  .opts select { padding: 8px 10px; }
+
+  .brow { display: flex; gap: 8px; align-items: flex-start; margin-bottom: 8px; }
+  .brow .no {
+    flex: 0 0 26px; height: 26px; margin-top: 6px; border-radius: 8px;
+    background: var(--accent-soft); color: var(--accent);
+    font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center;
+  }
+  .brow .bw { flex: 1; position: relative; }
+  .brow .bc {
+    position: absolute; right: 9px; bottom: 6px; font-size: 11px; color: #9ca3af;
+    font-variant-numeric: tabular-nums; background: #fff; padding: 0 2px;
+  }
+  .brow .bc.over { color: var(--bad); font-weight: 600; }
+
+  .btn {
+    border: 1px solid var(--border); background: #fff; border-radius: 9px;
+    padding: 8px 15px; font-size: 13px; cursor: pointer; color: var(--text); font-family: inherit;
+  }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+  .btn.primary:hover { opacity: .92; color: #fff; }
+  .btn.mini { padding: 4px 10px; font-size: 12px; border-radius: 7px; }
+  .btnrow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 4px; }
+
+  details.paste { border-top: 1px dashed var(--border); padding-top: 12px; margin-top: 4px; }
+  details.paste summary { font-size: 12px; color: var(--accent); cursor: pointer; }
+
+  /* 结果 */
+  .score-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 18px 20px; margin-bottom: 14px; display: flex; gap: 22px; align-items: center; flex-wrap: wrap;
+  }
+  .score-left { text-align: center; min-width: 96px; }
+  .score-num { font-size: 44px; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
+  .score-grade { font-size: 12px; color: var(--sub); margin-top: 6px; }
+  .score-right { flex: 1 1 320px; }
+  .verdict { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .counts { font-size: 12px; color: var(--sub); margin-bottom: 12px; }
+  .counts b { font-weight: 700; }
+  .counts .c-h { color: var(--bad); } .counts .c-m { color: var(--warn); } .counts .c-l { color: var(--sub); }
+  .dim { display: grid; grid-template-columns: 74px 1fr 38px; gap: 8px; align-items: center; margin-bottom: 6px; }
+  .dim .n { font-size: 12px; color: var(--sub); }
+  .dim .track { display: block; height: 7px; border-radius: 4px; background: #eef1f4; overflow: hidden; }
+  .dim .fill { display: block; height: 100%; border-radius: 4px; transition: width .3s; }
+  .dim .v { font-size: 12px; text-align: right; font-variant-numeric: tabular-nums; color: var(--sub); }
+
+  .issue { display: flex; gap: 10px; padding: 11px 12px; border-radius: 10px; margin-bottom: 8px; border: 1px solid transparent; }
+  .issue.high { background: var(--bad-soft); border-color: #f8d7d7; }
+  .issue.mid  { background: var(--warn-soft); border-color: #fbe6bd; }
+  .issue.low  { background: #f8fafc; border-color: #eceff3; }
+  .issue .lv { flex: 0 0 auto; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 6px; height: 20px; line-height: 18px; }
+  .issue.high .lv { background: #fee2e2; color: var(--bad); }
+  .issue.mid .lv { background: #fef3c7; color: var(--warn); }
+  .issue.low .lv { background: #eef2f6; color: #64748b; }
+  .issue .body { flex: 1; min-width: 0; }
+  .issue .msg { font-size: 13.5px; font-weight: 500; word-break: break-word; }
+  .issue .msg .tag {
+    font-size: 11px; font-weight: 500; color: var(--sub); background: #fff;
+    border: 1px solid var(--border); border-radius: 6px; padding: 0 6px; margin-right: 6px;
+  }
+  .issue .where { font-size: 11px; color: var(--sub); margin-top: 2px; }
+  .issue .fix { font-size: 12px; color: #475569; margin-top: 5px; padding-left: 8px; border-left: 2px solid #e2e8f0; }
+
+  table.kw { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.kw th, table.kw td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  table.kw th { font-size: 11px; color: var(--sub); font-weight: 500; white-space: nowrap; }
+  table.kw td.w { font-size: 12px; color: var(--sub); }
+  .st { display: inline-block; font-size: 11px; padding: 1px 7px; border-radius: 10px; white-space: nowrap; }
+  .st.g { background: var(--ok-soft); color: var(--ok); }
+  .st.y { background: var(--warn-soft); color: var(--warn); }
+  .st.r { background: var(--bad-soft); color: var(--bad); }
+
+  .prev-item { margin-bottom: 12px; }
+  .prev-item .pl { font-size: 11px; color: var(--sub); margin-bottom: 3px; }
+  .prev-item .pt {
+    font-size: 13px; line-height: 1.75; background: #fafbfc; border: 1px solid var(--border);
+    border-radius: 9px; padding: 9px 11px; white-space: pre-wrap; word-break: break-word;
+  }
+  mark.mk { border-radius: 3px; padding: 0 1px; color: inherit; }
+  mark.mk.high { background: #fecaca; box-shadow: inset 0 -2px 0 #f87171; }
+  mark.mk.mid  { background: #fde68a; box-shadow: inset 0 -2px 0 #fbbf24; }
+  mark.mk.low  { background: #e2e8f0; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { font-size: 12px; color: #166534; background: var(--ok-soft); border: 1px solid #d1f0da; border-radius: 8px; padding: 3px 9px; }
+
+  .empty { text-align: center; color: #9ca3af; font-size: 13px; padding: 26px 0; }
+  .hint { font-size: 12px; color: var(--sub); }
+  .toast {
+    position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%) translateY(20px);
+    background: #111827; color: #fff; font-size: 13px; padding: 9px 18px; border-radius: 10px;
+    opacity: 0; pointer-events: none; transition: all .22s; z-index: 99;
+  }
+  .toast.on { opacity: 1; transform: translateX(-50%) translateY(0); }
+  @media (max-width: 560px) {
+    .score-card { gap: 14px; }
+    .score-num { font-size: 36px; }
+    .dim { grid-template-columns: 66px 1fr 32px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="index.html">← 返回工具站</a>
+  <h1>📝 Listing 文案检查</h1>
+  <p class="lead">粘贴标题和五点，30 项规则跑一遍：字符与结构、关键词覆盖、违禁风险词、AI 检索可读性。全部在你本机算，不联网、不上传。</p>
+
+  <div class="panel">
+    <div class="opts">
+      <div class="field" style="flex:0 0 130px">
+        <label>站点</label>
+        <select id="site">
+          <option value="CA">加拿大 CA</option>
+          <option value="US">美国 US</option>
+          <option value="UK">英国 UK</option>
+          <option value="DE">德国 DE</option>
+          <option value="JP">日本 JP</option>
+        </select>
+      </div>
+      <div class="field" style="flex:0 0 190px">
+        <label>标题字符上限</label>
+        <select id="tlimit">
+          <option value="200">200 · 多数类目</option>
+          <option value="150">150 · 部分类目</option>
+          <option value="80">80 · 个护/小件</option>
+        </select>
+      </div>
+      <div class="field grow" style="text-align:right">
+        <div class="btnrow" style="justify-content:flex-end">
+          <button class="btn" id="btnSample">填个示例</button>
+          <button class="btn" id="btnClear">清空</button>
+          <button class="btn primary" id="btnRun">开始检查</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>标题 <span class="num" id="cTitle">0 / 200</span></label>
+      <textarea id="title" rows="2" placeholder="把亚马逊后台的标题整段粘进来"></textarea>
+    </div>
+
+    <div class="field">
+      <label>五点描述 <span class="hint">（每条上限 500 字符，移动端前 200 字符可见）</span></label>
+      <div id="bullets"></div>
+    </div>
+
+    <div class="field">
+      <label>目标关键词 <span class="hint">（一行一个，逗号/顿号也行）</span></label>
+      <textarea id="kws" rows="3" placeholder="scuba mask&#10;snorkel set adult&#10;..."></textarea>
+      <div class="btnrow" style="margin-top:8px">
+        <button class="btn mini" data-preset="snorkel">浮潜面罩常用词</button>
+        <button class="btn mini" data-preset="snow">雪挡常用词</button>
+      </div>
+    </div>
+
+    <details class="paste" id="optWrap">
+      <summary>更多（后台搜索词 / 自定义禁用词 / 整段粘贴自动拆分）</summary>
+      <div style="margin-top:12px">
+        <div class="field">
+          <label>后台 Search Terms <span class="num" id="cSt">0 / 250 字节</span></label>
+          <textarea id="st" rows="2" placeholder="选填。空格分隔，别用逗号，别重复标题已有的词"></textarea>
+        </div>
+        <div class="field">
+          <label>自定义禁用词 <span class="hint">（一行一个：竞品品牌、内部黑名单）</span></label>
+          <textarea id="bl" rows="2" placeholder="选填"></textarea>
+        </div>
+        <div class="field">
+          <label>整段粘贴 → 自动拆分</label>
+          <textarea id="raw" rows="4" placeholder="把整段文案（标题 + 五点）粘这里，点下面按钮自动拆到对应输入框"></textarea>
+          <div class="btnrow" style="margin-top:8px">
+            <button class="btn mini" id="btnSplit">拆到上面</button>
+          </div>
+        </div>
+      </div>
+    </details>
+  </div>
+
+  <div id="out"></div>
+
+  <div class="block">
+    <h3>这套规则查什么</h3>
+    <div class="hint" style="line-height:1.9">
+      <b>结构</b>：标题字符上限、五点条数与长度、禁用符号、中英混排、空格标点、重复堆词、后台词 250 字节。<br>
+      <b>合规</b>：排名/最高级宣称、促销与物流承诺、保证与保修、医疗功效、抗菌农药类、认证机构、环保与材质安全、联系方式和外链、他人品牌、emoji 与全大写。<br>
+      <b>关键词</b>：逐个词核对是否出现在标题/五点/后台词，区分「标题已覆盖 / 只词都在没连写 / 只在五点 / 未覆盖」。<br>
+      <b>可读性</b>：有没有带单位的规格、材质、包装清单、适用人群、尺寸适配、清洁保养、句子是不是太长。
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="listing-core.js"></script>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var BULLETS = 5;
+  var DRAFT_KEY = 'listing-draft-v1';
+
+
+  /* ---------- 建五点输入框 ---------- */
+  var bWrap = $('bullets');
+  for (var i = 0; i < BULLETS; i++) {
+    var row = document.createElement('div');
+    row.className = 'brow';
+    row.innerHTML = '<span class="no">' + (i + 1) + '</span>' +
+      '<div class="bw"><textarea rows="2" id="b' + i + '" placeholder="第 ' + (i + 1) + ' 条卖点"></textarea>' +
+      '<span class="bc" id="cB' + i + '">0</span></div>';
+    bWrap.appendChild(row);
+  }
+
+  if (!window.LISTING) {
+    $('out').innerHTML = '<div class="block"><div class="empty">规则文件 listing-core.js 没加载上，确认它和本页面在同一个文件夹里。</div></div>';
+    return;
+  }
+
+  /* ---------- 小工具 ---------- */
+  function toast(msg) {
+    var t = $('toast');
+    t.textContent = msg;
+    t.classList.add('on');
+    clearTimeout(t._t);
+    t._t = setTimeout(function () { t.classList.remove('on'); }, 1700);
+  }
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function bytes(s) {
+    if (window.TextEncoder) return new TextEncoder().encode(s).length;
+    return unescape(encodeURIComponent(s)).length;
+  }
+  function copyText(text) {
+    return new Promise(function (resolve) {
+      function fb() {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed'; ta.style.top = '-1000px'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select();
+        var ok = false;
+        try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+        document.body.removeChild(ta);
+        resolve(ok);
+      }
+      if (navigator.clipboard && location.protocol !== 'file:') {
+        navigator.clipboard.writeText(text).then(function () { resolve(true); }, fb);
+      } else { fb(); }
+    });
+  }
+
+  /* ---------- 读数 & 存草稿 ---------- */
+  function readInput() {
+    var bullets = [];
+    for (var i = 0; i < BULLETS; i++) bullets.push($('b' + i).value);
+    return {
+      site: $('site').value,
+      titleLimit: Number($('tlimit').value) || 200,
+      title: $('title').value,
+      bullets: bullets,
+      st: $('st').value,
+      kws: window.LISTING.parseKws($('kws').value),
+      blacklist: window.LISTING.parseKws($('bl').value)
+    };
+  }
+  function saveDraft() {
+    try {
+      var d = readInput();
+      d.kwsText = $('kws').value;
+      d.blText = $('bl').value;
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(d));
+    } catch (e) {}
+  }
+  function loadDraft() {
+    try {
+      var d = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null');
+      if (!d) return false;
+      $('site').value = d.site || 'CA';
+      $('tlimit').value = d.titleLimit || 200;
+      $('title').value = d.title || '';
+      (d.bullets || []).forEach(function (b, i) { if ($('b' + i)) $('b' + i).value = b; });
+      $('kws').value = d.kwsText || '';
+      $('bl').value = d.blText || '';
+      $('st').value = d.st || '';
+      return !!(d.title || (d.bullets || []).join(''));
+    } catch (e) { return false; }
+  }
+
+  function updateCounts() {
+    var lim = Number($('tlimit').value) || 200;
+    var tl = $('title').value.length;
+    var c = $('cTitle');
+    c.textContent = tl + ' / ' + lim;
+    c.classList.toggle('over', tl > lim);
+    for (var i = 0; i < BULLETS; i++) {
+      var n = $('b' + i).value.length;
+      var el = $('cB' + i);
+      el.textContent = n + ' / 500';
+      el.classList.toggle('over', n > 500);
+    }
+    var sb = bytes($('st').value);
+    var cs = $('cSt');
+    cs.textContent = sb + ' / 250 字节';
+    cs.classList.toggle('over', sb > 250);
+  }
+
+  /* ---------- 渲染 ---------- */
+  function dimColor(v) {
+    if (v == null) return '#cbd5e1';
+    if (v >= 85) return 'var(--ok)';
+    if (v >= 65) return 'var(--warn)';
+    return 'var(--bad)';
+  }
+  function scoreColor(v) {
+    if (v >= 90) return 'var(--ok)';
+    if (v >= 75) return '#0f766e';
+    if (v >= 60) return 'var(--warn)';
+    return 'var(--bad)';
+  }
+  function lvName(l) { return l === 'high' ? '必须改' : l === 'mid' ? '建议改' : '提示'; }
+
+  function issueHtml(it) {
+    return '<div class="issue ' + it.level + '">' +
+      '<span class="lv">' + lvName(it.level) + '</span>' +
+      '<div class="body"><div class="msg"><span class="tag">' + esc(it.tag) + '</span>' + esc(it.msg) + '</div>' +
+      (it.where ? '<div class="where">位置：' + esc(it.where) + '</div>' : '') +
+      (it.fix ? '<div class="fix">改法：' + esc(it.fix) + '</div>' : '') +
+      '</div></div>';
+  }
+
+  function markHtml(text, list) {
+    if (!list || !list.length) return esc(text);
+    var sorted = list.slice().sort(function (a, b) { return a.start - b.start || b.end - a.end; });
+    var out = '', pos = 0;
+    sorted.forEach(function (m) {
+      var s = Math.max(0, m.start), e = Math.min(text.length, m.end);
+      if (s < pos || e <= s) return;
+      out += esc(text.slice(pos, s));
+      out += '<mark class="mk ' + m.level + '">' + esc(text.slice(s, e)) + '</mark>';
+      pos = e;
+    });
+    out += esc(text.slice(pos));
+    return out;
+  }
+
+  function stChip(row) {
+    if (row.val >= 1) return '<span class="st g">标题已覆盖</span>';
+    if (row.val >= 0.75) return '<span class="st y">词都在·未连写</span>';
+    if (row.val > 0) return '<span class="st y">' + esc(row.status) + '</span>';
+    return '<span class="st r">未覆盖</span>';
+  }
+
+  var lastResult = null;
+
+  function render(r) {
+    lastResult = r;
+    var out = $('out');
+    if (!r || r.grade === '待输入') {
+      out.innerHTML = '<div class="block"><div class="empty">先把标题和五点填进来，点「开始检查」。</div></div>';
+      return;
+    }
+
+    var d = r.dims;
+    var dimRows = [
+      ['字符结构', d.structure],
+      ['关键词', d.keyword],
+      ['合规风险', d.risk],
+      ['可读性', d.readability]
+    ].map(function (x) {
+      var v = x[1];
+      return '<div class="dim"><span class="n">' + x[0] + '</span>' +
+        '<span class="track"><span class="fill" style="width:' + (v == null ? 0 : v) + '%;background:' + dimColor(v) + '"></span></span>' +
+        '<span class="v">' + (v == null ? '—' : v) + '</span></div>';
+    }).join('');
+
+    var html = '';
+    html += '<div class="score-card">' +
+      '<div class="score-left">' +
+      '<div class="score-num" style="color:' + scoreColor(r.total) + '">' + r.total + '</div>' +
+      '<div class="score-grade">' + esc(r.grade) + '</div></div>' +
+      '<div class="score-right">' +
+      '<div class="verdict">' + esc(r.verdict) + '</div>' +
+      '<div class="counts"><b class="c-h">' + r.counts.high + '</b> 项必须改 · ' +
+      '<b class="c-m">' + r.counts.mid + '</b> 项建议改 · ' +
+      '<b class="c-l">' + r.counts.low + '</b> 项提示 · ' +
+      '标题 ' + r.stats.titleLen + '/' + r.stats.titleLimit + ' 字符' +
+      (r.stats.avgBullet ? ' · 五点均 ' + r.stats.avgBullet + ' 字符' : '') +
+      '</div>' + dimRows + '</div></div>';
+
+    ['high', 'mid', 'low'].forEach(function (lv) {
+      var list = r.issues.filter(function (i) { return i.level === lv; });
+      if (!list.length) return;
+      html += '<div class="block" id="blk-' + lv + '"><h3>' + lvName(lv) +
+        '<span class="cnt">' + list.length + ' 项</span></h3>' +
+        list.map(issueHtml).join('') + '</div>';
+    });
+
+    // 关键词
+    if (r.kwRows.length) {
+      var missing = r.kwRows.filter(function (k) { return k.val === 0; }).map(function (k) { return k.kw; });
+      html += '<div class="block"><h3>关键词覆盖 <span class="cnt">' + (r.coverage == null ? '' : r.coverage + '%') + '</span></h3>';
+      html += '<table class="kw"><thead><tr><th>关键词</th><th>出现位置</th><th>状态</th><th>建议</th></tr></thead><tbody>';
+      r.kwRows.forEach(function (k) {
+        html += '<tr><td>' + esc(k.kw) + '</td>' +
+          '<td class="w">' + (k.where || '—') + '</td>' +
+          '<td>' + stChip(k) + '</td>' +
+          '<td class="w">' + esc(k.advice || '') + '</td></tr>';
+      });
+      html += '</tbody></table>';
+      if (missing.length) {
+        html += '<div class="btnrow" style="margin-top:12px">' +
+          '<button class="btn mini" id="btnCopyMissing">复制未覆盖的 ' + missing.length + ' 个词</button>' +
+          '<span class="hint">' + esc(missing.join('、')) + '</span></div>';
+      }
+      html += '</div>';
+    }
+
+    // 标注预览
+    var prev = '';
+    [['title', '标题', window.__in.title]].concat(
+      window.__in.bullets.map(function (b, i) { return ['b' + (i + 1), '五点' + (i + 1), b]; })
+    ).concat(window.__in.st ? [['st', '后台词', window.__in.st]] : []).forEach(function (f, idx) {
+      if (idx === 0 && !f[2]) return;
+      if (idx > 0 && !f[2]) return;
+      prev += '<div class="prev-item"><div class="pl">' + f[1] + '</div><div class="pt">' +
+        markHtml(f[2], r.marks[f[0]]) + '</div></div>';
+    });
+    if (prev) {
+      html += '<div class="block"><h3>标注预览 <span class="cnt">红=必须改 黄=建议改 灰=提示</span></h3>' + prev + '</div>';
+    }
+
+    // 通过项
+    if (r.passed.length) {
+      html += '<div class="block"><h3>已通过 <span class="cnt">' + r.passed.length + ' 项</span></h3>' +
+        '<div class="chips">' + r.passed.map(function (p) { return '<span class="chip">✓ ' + esc(p) + '</span>'; }).join('') +
+        '</div></div>';
+    }
+
+    html += '<div class="btnrow" style="margin-bottom:24px">' +
+      '<button class="btn primary" id="btnCopyReport">复制完整报告</button>' +
+      '<button class="btn" id="btnBackTop">回到上面改</button></div>';
+
+    out.innerHTML = html;
+
+    var cm = $('btnCopyMissing');
+    if (cm) cm.addEventListener('click', function () {
+      var list = r.kwRows.filter(function (k) { return k.val === 0; }).map(function (k) { return k.kw; }).join('\n');
+      copyText(list).then(function (ok) { toast(ok ? '已复制未覆盖的词' : '复制失败，手动选一下'); });
+    });
+    $('btnCopyReport').addEventListener('click', function () {
+      var txt = buildReport(r);
+      copyText(txt).then(function (ok) { toast(ok ? '报告已复制，可以直接发给同事' : '复制失败，手动选一下'); });
+    });
+    $('btnBackTop').addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+
+  function buildReport(r) {
+    var now = new Date();
+    var pad = function (n) { return n < 10 ? '0' + n : '' + n; };
+    var L = [];
+    L.push('Listing 文案检查 ·' + now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate()) +
+      ' ' + pad(now.getHours()) + ':' + pad(now.getMinutes()));
+    L.push('站点 ' + r.stats.site + ' · 标题 ' + r.stats.titleLen + '/' + r.stats.titleLimit + ' 字符');
+    L.push('总分 ' + r.total + '（' + r.grade + '）：' + r.verdict);
+    L.push('分项：结构 ' + (r.dims.structure == null ? '—' : r.dims.structure) +
+      ' / 关键词 ' + (r.dims.keyword == null ? '—' : r.dims.keyword) +
+      ' / 合规 ' + r.dims.risk + ' / 可读性 ' + r.dims.readability);
+    L.push('');
+    [['high', '必须改'], ['mid', '建议改'], ['low', '提示']].forEach(function (x) {
+      var list = r.issues.filter(function (i) { return i.level === x[0]; });
+      if (!list.length) return;
+      L.push('【' + x[1] + '】' + list.length + ' 项');
+      list.forEach(function (it, i) {
+        L.push((i + 1) + '. [' + it.tag + '] ' + it.msg + (it.where ? '（' + it.where + '）' : ''));
+        if (it.fix) L.push('   改法：' + it.fix);
+      });
+      L.push('');
+    });
+    if (r.kwRows.length) {
+      L.push('【关键词覆盖】' + (r.coverage == null ? '—' : r.coverage + '%'));
+      r.kwRows.forEach(function (k) {
+        L.push('- ' + k.kw + '：' + k.status + (k.where ? '（' + k.where + '）' : ''));
+      });
+      L.push('');
+    }
+    L.push('【已通过】' + r.passed.join('；'));
+    return L.join('\n');
+  }
+
+  /* ---------- 交互 ---------- */
+  var PRESETS = {
+    snorkel: ['scuba mask', 'snorkel', 'snorkel mask adult', 'snorkel set', 'snorkel set adult', 'snorkeling mask adult'],
+    snow: ['windshield snow cover', 'windshield cover for ice and snow', 'windshield frost cover', 'car windshield cover for winter', 'ice scraper alternative', 'snow cover for car']
+  };
+
+  var SAMPLE = {
+    title: 'BEST SELLER Snorkel Mask Adult - 100% Non-Toxic Food Grade Silicone Scuba Mask Set, Eco-Friendly Anti-Fog Snorkeling Mask for Adults, FDA Approved!! Free Shipping',
+    bullets: [
+      '★ EASY BREATHING - Our snorkel mask uses a dry top valve so you never get water in your mouth. Tested by over 5000 customers! Contact us at dive@example.com for help.',
+      'WATERPROOF AND DURABLE - Made of premium materials with a wide view lens, guaranteed for life',
+      'THE BEST GIFT FOR KIDS AND ADULTS - perfect for beach, pool and travel. Call 1-800-555-0123 to order now!',
+      'ANTI-FOG DESIGN - anti fog coating keeps your vision clear while diving. Antibacterial silicone kills 99% of germs.',
+      'WHAT YOU GET - 1 x mask, 1 x snorkel, 1 x mesh bag. Compatible with GoPro mount.'
+    ],
+    st: 'snorkel, mask, scuba, diving gear, snorkel mask adult, swim, water sports',
+    kws: 'scuba mask\nsnorkel\nsnorkel mask adult\nsnorkel set\nsnorkel set adult\nsnorkeling mask adult'
+  };
+
+  function run() {
+    var inp = readInput();
+    inp.title = String(inp.title || '').trim();
+    inp.bullets = inp.bullets.map(function (b) { return String(b || '').trim(); });
+    inp.st = String(inp.st || '').trim();
+    window.__in = inp;
+    var r = window.LISTING.analyze(inp);
+    render(r);
+    updateCounts();
+    if (r.grade !== '待输入') {
+      var top = $('out').getBoundingClientRect().top + window.pageYOffset - 12;
+      window.scrollTo({ top: top, behavior: 'smooth' });
+    }
+    return r;
+  }
+
+  $('btnRun').addEventListener('click', run);
+
+  $('btnSample').addEventListener('click', function () {
+    $('title').value = SAMPLE.title;
+    for (var i = 0; i < BULLETS; i++) $('b' + i).value = SAMPLE.bullets[i] || '';
+    $('kws').value = SAMPLE.kws;
+    $('st').value = SAMPLE.st;
+    $('bl').value = '';
+    $('tlimit').value = '200';
+    $('site').value = 'CA';
+    saveDraft(); run();
+    toast('示例已填入：这份是故意写坏的，看规则怎么挑毛病');
+  });
+
+  $('btnClear').addEventListener('click', function () {
+    $('title').value = '';
+    for (var i = 0; i < BULLETS; i++) $('b' + i).value = '';
+    $('kws').value = ''; $('st').value = ''; $('bl').value = ''; $('raw').value = '';
+    localStorage.removeItem(DRAFT_KEY);
+    window.__in = null;
+    $('out').innerHTML = '<div class="block"><div class="empty">清空了，贴新文案吧。</div></div>';
+    updateCounts();
+  });
+
+  document.querySelectorAll('[data-preset]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      $('kws').value = PRESETS[b.getAttribute('data-preset')].join('\n');
+      saveDraft(); updateCounts();
+      toast('关键词已填好，点「开始检查」');
+    });
+  });
+
+  $('btnSplit').addEventListener('click', function () {
+    var raw = $('raw').value;
+    if (!raw.trim()) { toast('先粘一段文案进来'); return; }
+    var lines = raw.split(/\r?\n/).map(function (s) { return s.trim(); }).filter(Boolean);
+    var title = '';
+    if (lines[0] && lines[0].length >= 40) title = lines.shift();
+    else {
+      var idx = -1;
+      for (var i = 0; i < lines.length; i++) { if (lines[i].length >= 60) { idx = i; break; } }
+      if (idx >= 0) title = lines.splice(idx, 1)[0];
+      else if (lines.length) title = lines.shift();
+    }
+    var parts = lines.map(function (l) {
+      return l.replace(/^[\s•·\-–—*+✓✔★●○▪>]+/, '').replace(/^\d+[.)、:]\s*/, '').trim();
+    }).filter(Boolean);
+    if (parts.length > 5) parts[4] = parts.slice(4).join(' ');
+    $('title').value = title;
+    for (var i = 0; i < BULLETS; i++) $('b' + i).value = parts[i] || '';
+    saveDraft(); updateCounts();
+    toast('拆好了：标题 1 行 + 五点 ' + Math.min(parts.length, 5) + ' 条，核对一下再检查');
+  });
+
+  ['title', 'kws', 'st', 'bl', 'site', 'tlimit'].forEach(function (id) {
+    $(id).addEventListener('input', function () { updateCounts(); saveDraft(); });
+    $(id).addEventListener('change', function () { updateCounts(); saveDraft(); });
+  });
+  for (var i = 0; i < BULLETS; i++) {
+    $('b' + i).addEventListener('input', function () { updateCounts(); saveDraft(); });
+  }
+
+  // 启动
+  var had = loadDraft();
+  updateCounts();
+  window.__in = readInput();
+  if (had) { run(); }
+  else {
+    $('out').innerHTML = '<div class="block"><div class="empty">还没内容。贴标题和五点，或者先点「填个示例」看看效果。</div></div>';
+  }
+})();
+</script>
+</body>
+</html>
