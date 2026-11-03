@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cellipse cx='27' cy='42' rx='9' ry='6' fill='%235b4b45' transform='rotate(-25 27 42)'/%3E%3Cellipse cx='73' cy='42' rx='9' ry='6' fill='%235b4b45' transform='rotate(25 73 42)'/%3E%3Cg fill='%23ffffff' stroke='%23ddd7cd' stroke-width='2'%3E%3Ccircle cx='50' cy='22' r='12'/%3E%3Ccircle cx='37' cy='27' r='11'/%3E%3Ccircle cx='63' cy='27' r='11'/%3E%3Ccircle cx='33' cy='38' r='10'/%3E%3Ccircle cx='67' cy='38' r='10'/%3E%3Ccircle cx='36' cy='66' r='12'/%3E%3Ccircle cx='50' cy='62' r='13'/%3E%3Ccircle cx='64' cy='66' r='12'/%3E%3Ccircle cx='42' cy='77' r='10'/%3E%3Ccircle cx='58' cy='77' r='10'/%3E%3C/g%3E%3Cellipse cx='50' cy='40' rx='17' ry='16' fill='%235b4b45'/%3E%3Ccircle cx='50' cy='24' r='8' fill='%23ffffff'/%3E%3Ccircle cx='43.5' cy='41' r='3.6' fill='%23ffffff'/%3E%3Ccircle cx='56.5' cy='41' r='3.6' fill='%23ffffff'/%3E%3Ccircle cx='44' cy='41.8' r='2' fill='%23302420'/%3E%3Ccircle cx='57' cy='41.8' r='2' fill='%23302420'/%3E%3Ccircle cx='44.6' cy='41' r='.7' fill='%23ffffff'/%3E%3Ccircle cx='57.6' cy='41' r='.7' fill='%23ffffff'/%3E%3Cellipse cx='50' cy='48.5' rx='2.2' ry='1.6' fill='%23907d6e'/%3E%3Cellipse cx='37' cy='47' rx='3.6' ry='2.2' fill='%23f4b8b8' opacity='.85'/%3E%3Cellipse cx='63' cy='47' rx='3.6' ry='2.2' fill='%23f4b8b8' opacity='.85'/%3E%3Cpath d='M46.5 52.5 Q50 55.5 53.5 52.5' stroke='%23ffffff' stroke-width='1.6' fill='none' stroke-linecap='round'/%3E%3Crect x='41' y='85' width='5' height='10' rx='2.5' fill='%235b4b45'/%3E%3Crect x='54' y='85' width='5' height='10' rx='2.5' fill='%235b4b45'/%3E%3C/svg%3E">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>广告报表分析器 · 江永航的工具站</title>
+<style>
+  :root {
+    --bg: #f6f7f9; --card: #fff; --text: #1f2933; --sub: #6b7280;
+    --border: #e5e7eb; --accent: #2563eb; --accent-soft: #eff6ff;
+    --ok: #16a34a; --ok-soft: #ecfdf3; --bad: #dc2626; --bad-soft: #fef2f2;
+    --warn: #d97706; --warn-soft: #fffbeb; --radius: 14px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.6;
+  }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 26px 20px 70px; }
+  a.back { font-size: 13px; color: var(--accent); text-decoration: none; }
+  h1 { font-size: 22px; margin: 10px 0 2px; }
+  .lead { color: var(--sub); font-size: 13px; margin-bottom: 18px; max-width: 820px; }
+
+  /* 通用按钮 */
+  .btn {
+    border: 1px solid var(--accent); background: var(--accent); color: #fff;
+    font-size: 13px; padding: 8px 16px; border-radius: 9px; cursor: pointer;
+    font-family: inherit; transition: opacity .15s;
+  }
+  .btn:hover { opacity: .9; }
+  .btn.ghost { background: #fff; color: var(--accent); }
+  .btn.sm { padding: 6px 12px; font-size: 12px; border-radius: 8px; }
+  .btn:disabled { opacity: .45; cursor: default; }
+
+  /* 上传区 */
+  .drop {
+    background: var(--card); border: 2px dashed #cbd5e1; border-radius: var(--radius);
+    padding: 46px 24px; text-align: center; transition: border-color .15s, background .15s;
+  }
+  .drop.over { border-color: var(--accent); background: var(--accent-soft); }
+  .dz-ico { font-size: 34px; margin-bottom: 6px; }
+  .dz-t { font-size: 15px; font-weight: 600; }
+  .dz-s { font-size: 12.5px; color: var(--sub); margin-top: 6px; }
+  .dz-act { margin-top: 18px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+
+  .err {
+    margin-top: 16px; background: var(--bad-soft); border: 1px solid #f5c2c2;
+    color: #991b1b; border-radius: var(--radius); padding: 14px 16px; font-size: 13px;
+  }
+  .err b { display: block; margin-bottom: 4px; }
+
+  /* 来源条 */
+  .srcbar {
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    background: var(--accent-soft); border: 1px solid #dbeafe; border-radius: var(--radius);
+    padding: 10px 16px; margin-bottom: 16px; font-size: 12.5px; color: #1e40af;
+  }
+  .srcbar .spacer { flex: 1; }
+
+  /* 参数 */
+  .cfg { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; margin-bottom: 16px; }
+  .cfg-t { font-size: 13px; font-weight: 700; margin-bottom: 12px; }
+  .cfg-t small { font-weight: 400; color: var(--sub); font-size: 11.5px; margin-left: 6px; }
+  .cfg-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+  .field label { display: block; font-size: 11.5px; color: var(--sub); margin-bottom: 4px; }
+  .field input {
+    width: 100%; padding: 7px 10px; border: 1px solid var(--border); border-radius: 8px;
+    font-size: 14px; color: var(--text); outline: none; background: #fff; font-family: inherit;
+  }
+  .field input:focus { border-color: var(--accent); }
+
+  /* KPI */
+  .kpis { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin-bottom: 20px; }
+  .kpi { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; }
+  .kpi .k { font-size: 11.5px; color: var(--sub); }
+  .kpi .v { font-size: 20px; font-weight: 700; margin-top: 1px; letter-spacing: -.3px; }
+  .kpi .n { font-size: 11px; color: var(--sub); margin-top: 1px; }
+  .kpi.good { background: var(--ok-soft); border-color: #bbe7c6; }
+  .kpi.bad { background: var(--bad-soft); border-color: #f5c2c2; }
+  .kpi.warn { background: var(--warn-soft); border-color: #fde68a; }
+
+  /* Tabs */
+  .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+  .tabs button {
+    border: 1px solid var(--border); background: var(--card); color: var(--text);
+    padding: 8px 14px; border-radius: 999px; font-size: 13px; cursor: pointer; font-family: inherit;
+  }
+  .tabs button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .tabs .cnt {
+    display: inline-block; min-width: 18px; padding: 0 5px; margin-left: 4px;
+    border-radius: 9px; background: rgba(0,0,0,.08); font-size: 11px; text-align: center;
+  }
+  .tabs button.on .cnt { background: rgba(255,255,255,.25); }
+
+  /* 工具栏 */
+  .toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+  .toolbar .spacer { flex: 1; }
+  #q {
+    flex: 1 1 240px; max-width: 340px; padding: 8px 12px; border: 1px solid var(--border);
+    border-radius: 9px; font-size: 13px; outline: none; font-family: inherit; background: #fff;
+  }
+  #q:focus { border-color: var(--accent); }
+
+  .hint { font-size: 12px; color: var(--sub); margin: 4px 0 10px; line-height: 1.7; }
+
+  /* 表格 */
+  .tblwrap {
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+    overflow: auto; max-height: 60vh;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  thead th {
+    position: sticky; top: 0; z-index: 2; background: #f8fafc; text-align: right;
+    font-weight: 600; color: var(--sub); font-size: 11.5px; padding: 10px 10px;
+    border-bottom: 1px solid var(--border); white-space: nowrap; cursor: pointer;
+    user-select: none;
+  }
+  thead th:hover { color: var(--accent); }
+  thead th.l { text-align: left; }
+  thead th .ar { font-size: 9px; opacity: .75; margin-left: 2px; }
+  tbody td {
+    padding: 8px 10px; border-bottom: 1px solid #f1f3f5; text-align: right;
+    white-space: nowrap; vertical-align: middle;
+  }
+  tbody td.l { text-align: left; white-space: normal; }
+  tbody tr:hover { background: #fafbfc; }
+  tbody tr:last-child td { border-bottom: none; }
+  .term { font-weight: 600; color: var(--text); }
+  .muted { color: var(--sub); font-size: 11.5px; }
+  .num-bad { color: var(--bad); font-weight: 600; }
+  .num-good { color: var(--ok); font-weight: 600; }
+
+  .chip {
+    display: inline-block; padding: 1px 8px; border-radius: 9px; font-size: 11px;
+    font-weight: 600; white-space: nowrap;
+  }
+  .chip.neg { background: var(--bad-soft); color: #b91c1c; }
+  .chip.scale { background: var(--ok-soft); color: #15803d; }
+  .chip.ok { background: #f1f5f9; color: #475569; }
+  .chip.bad { background: var(--warn-soft); color: #b45309; }
+  .chip.watch { background: #f8fafc; color: #64748b; }
+  .chip.low { background: #f8fafc; color: #94a3b8; }
+
+  .pager { display: flex; align-items: center; gap: 10px; justify-content: center; margin-top: 14px; font-size: 12.5px; color: var(--sub); }
+  .pager button { border: 1px solid var(--border); background: #fff; padding: 5px 12px; border-radius: 8px; cursor: pointer; font-size: 12.5px; font-family: inherit; }
+  .pager button:disabled { opacity: .4; cursor: default; }
+
+  .empty { padding: 40px 20px; text-align: center; color: #94a3b8; font-size: 13px; }
+  footer { text-align: center; font-size: 12px; color: var(--sub); margin-top: 50px; }
+
+  @media (max-width: 640px) {
+    .wrap { padding: 18px 12px 60px; }
+    .cfg-grid { grid-template-columns: 1fr 1fr; }
+    h1 { font-size: 19px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <a class="back" href="index.html">← 返回工具站</a>
+  <h1>📊 广告报表分析器</h1>
+  <p class="lead">把亚马逊「搜索词报告」CSV 拖进来，一次算清 ACOS / CTR / CVR / CPC，直接列出<b>该否定的词</b>和<b>该加价的词</b>，导出 CSV 就能贴回后台。文件只在本机解析，不会上传到任何地方。</p>
+
+  <div class="drop" id="drop">
+    <div class="dz-ico">📥</div>
+    <div class="dz-t">拖入搜索词报告（.csv / .tsv / .txt）</div>
+    <div class="dz-s">SP、SB、SD 报表都能认；中英文表头、UTF-8 / GBK 编码自动识别</div>
+    <div class="dz-act">
+      <button class="btn" id="pickBtn">选择文件</button>
+      <button class="btn ghost" id="demoBtn">用示例数据试一下</button>
+    </div>
+    <input type="file" id="fileInput" accept=".csv,.tsv,.txt" hidden>
+  </div>
+
+  <div id="err" class="err" style="display:none"></div>
+
+  <div id="main" style="display:none">
+    <div class="srcbar">
+      <span id="srcInfo"></span>
+      <span class="spacer"></span>
+      <button class="btn ghost sm" id="resetBtn">换一份报表</button>
+    </div>
+
+    <div class="cfg">
+      <div class="cfg-t">⚙️ 判定参数 <small>改完自动重算，参数记在本机浏览器</small></div>
+      <div class="cfg-grid">
+        <div class="field"><label>目标 ACOS（%）</label><input type="number" id="pAcos" min="1" max="300" step="1"></div>
+        <div class="field"><label>否定 · 最少点击</label><input type="number" id="pClicks" min="0" step="1"></div>
+        <div class="field"><label>否定 · 最少花费 $</label><input type="number" id="pSpend" min="0" step="0.5"></div>
+        <div class="field"><label>加价 · 最少订单</label><input type="number" id="pOrders" min="1" step="1"></div>
+        <div class="field"><label>加价 · ACOS 上限（目标×%）</label><input type="number" id="pRatio" min="10" max="200" step="5"></div>
+      </div>
+    </div>
+
+    <div class="kpis" id="kpis"></div>
+
+    <div class="tabs" id="tabs">
+      <button data-view="neg">🚫 建议否定<span class="cnt" id="cNeg">0</span></button>
+      <button data-view="scale">🚀 建议加价<span class="cnt" id="cScale">0</span></button>
+      <button data-view="detail">📋 搜索词明细</button>
+      <button data-view="campaign">📁 活动汇总</button>
+    </div>
+
+    <div class="toolbar">
+      <input id="q" placeholder="搜关键词 / 活动名…">
+      <span class="spacer"></span>
+      <button class="btn ghost sm" id="copyBtn">复制本表</button>
+      <button class="btn sm" id="csvBtn">导出 CSV</button>
+    </div>
+
+    <div class="hint" id="hint"></div>
+    <div class="tblwrap"><table id="tbl"><thead id="thead"></thead><tbody id="tbody"></tbody></table></div>
+    <div class="pager" id="pager"></div>
+  </div>
+
+  <footer>小策为江永航而建 · 数据不出本机</footer>
+</div>
+
+<script>
+"use strict";
+
+/* =========================================================
+   1. 常量与表头别名
+   ========================================================= */
+var LS_PARAMS = "yh-ads-params";
+
+var ALIASES = {
+  campaign: ["campaignname", "广告活动名称", "广告活动", "活动名称", "campaign", "广告活动名"],
+  adgroup: ["adgroupname", "广告组名称", "广告组", "adgroup"],
+  targeting: ["targeting", "投放", "定位", "关键词", "keywordtext", "关键词文本", "商品投放", "投放内容"],
+  match: ["matchtype", "匹配类型"],
+  term: ["customersearchterm", "客户搜索词", "搜索词", "用户搜索词", "searchterm", "客户搜索词搜索词"],
+  impr: ["impressions", "展示量", "曝光量", "impression", "展示次数"],
+  clicks: ["clicks", "点击量", "点击次数", "click"],
+  spend: ["spend", "花费", "支出", "cost", "广告花费"],
+  sales: ["7daytotalsales", "7天总销售额", "总销售额", "sales", "14daytotalsales", "7天总销售", "广告销售额"],
+  orders: ["7daytotalorders", "7天总订单数", "7天总订单量", "总广告订单量", "totaladvertisingorders", "orders", "广告订单量", "订单量"],
+  units: ["7daytotalunits", "7天总销售量", "7天总销量", "units", "销量", "广告销量"]
+};
+
+var DEFAULT_PARAMS = { acos: 30, clicks: 10, spend: 5, orders: 2, ratio: 60 };
+
+/* =========================================================
+   2. 工具函数
+   ========================================================= */
+function normHeader(s) {
+  return String(s == null ? "" : s)
+    .toLowerCase()
+    .replace(/[\s_()（）\[\]【】:：#%·,、"'"'’\-]/g, "")
+    .replace(/^\uFEFF/, "");
+}
+
+function buildAliasMap() {
+  var map = {};
+  Object.keys(ALIASES).forEach(function (key) {
+    ALIASES[key].forEach(function (a) { map[normHeader(a)] = key; });
+  });
+  return map;
+}
+var ALIAS_MAP = buildAliasMap();
+
+function num(v) {
+  if (v === null || v === undefined) return 0;
+  var s = String(v).trim();
+  if (!s) return 0;
+  if (/^[-—–]+$/.test(s)) return 0;
+  if (/^(n\/?a|na|none|-)$/i.test(s)) return 0;
+  var pct = false;
+  if (s.charAt(s.length - 1) === "%") { pct = true; s = s.slice(0, -1); }
+  s = s.replace(/[$€£¥,\s]/g, "");
+  var n = parseFloat(s);
+  if (!isFinite(n)) return 0;
+  return pct ? n / 100 : n;
+}
+
+function esc(s) {
+  return String(s == null ? "" : s)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function fmtInt(v) {
+  if (!v) return "0";
+  return Math.round(v).toLocaleString("en-US");
+}
+function fmtMoney(v) {
+  if (!v) return "—";
+  return "$" + (Math.round(v * 100) / 100).toFixed(2);
+}
+function fmtPct(v) {
+  if (!isFinite(v) || v <= 0) return "—";
+  return (v * 100).toFixed(1) + "%";
+}
+
+function download(filename, text, mime) {
+  var blob = new Blob(["\uFEFF" + text], { type: (mime || "text/csv") + ";charset=utf-8" });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a");
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  setTimeout(function () { document.body.removeChild(a); URL.revokeObjectURL(url); }, 300);
+}
+
+function csvCell(v) {
+  var s = String(v == null ? "" : v);
+  if (/[",\n\r]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+  return s;
+}
+function toCSV(headers, rows) {
+  var out = [headers.map(csvCell).join(",")];
+  rows.forEach(function (r) { out.push(r.map(csvCell).join(",")); });
+  return out.join("\r\n");
+}
+
+/* =========================================================
+   3. 解析：解码 / 分隔符 / CSV / 表头定位
+   ========================================================= */
+function decodeBuffer(buf) {
+  var bytes = new Uint8Array(buf);
+  var text = "";
+  try {
+    text = new TextDecoder("utf-8", { fatal: false }).decode(bytes);
+  } catch (e) {
+    text = "";
+  }
+  var bad = (text.match(/\uFFFD/g) || []).length;
+  if (!text || bad > 2) {
+    try { text = new TextDecoder("gbk").decode(bytes); } catch (e2) { /* 保留 utf-8 结果 */ }
+  }
+  return text.replace(/^\uFEFF/, "");
+}
+
+function detectDelim(text) {
+  var line = "";
+  var lines = text.split(/\r?\n/);
+  for (var i = 0; i < lines.length; i++) {
+    if (lines[i].trim()) { line = lines[i]; break; }
+  }
+  var counts = { ",": 0, "\t": 0, ";": 0 };
+  for (var j = 0; j < line.length; j++) {
+    if (counts[line[j]] !== undefined) counts[line[j]]++;
+  }
+  var best = ",", bestN = -1;
+  Object.keys(counts).forEach(function (d) {
+    if (counts[d] > bestN) { bestN = counts[d]; best = d; }
+  });
+  return best;
+}
+
+function parseCSV(text, delim) {
+  var rows = [], row = [], field = "", inQ = false;
+  for (var i = 0; i < text.length; i++) {
+    var c = text[i];
+    if (inQ) {
+      if (c === '"') {
+        if (text[i + 1] === '"') { field += '"'; i++; }
+        else { inQ = false; }
+      } else {
+        field += c;
+      }
+    } else if (c === '"') {
+      inQ = true;
+    } else if (c === delim) {
+      row.push(field); field = "";
+    } else if (c === "\n") {
+      row.push(field); rows.push(row); row = []; field = "";
+    } else if (c === "\r") {
+      /* 跳过 */
+    } else {
+      field += c;
+    }
+  }
+  if (field !== "" || row.length) { row.push(field); rows.push(row); }
+  return rows;
+}
+
+function findHeader(rows) {
+  var limit = Math.min(rows.length, 15);
+  var best = null;
+  for (var i = 0; i < limit; i++) {
+    var r = rows[i];
+    if (!r || r.length < 3) continue;
+    var map = {}, n = 0;
+    for (var j = 0; j < r.length; j++) {
+      var key = ALIAS_MAP[normHeader(r[j])];
+      if (key && map[key] === undefined) { map[key] = j; n++; }
+    }
+    var strong = map.term !== undefined && map.clicks !== undefined && map.spend !== undefined;
+    if ((strong && n >= 4) || n >= 6) {
+      if (!best || n > best.n) best = { index: i, map: map, n: n };
+    }
+  }
+  return best;
+}
+
+/* =========================================================
+   4. 生成记录 + 聚合
+   ========================================================= */
+function toRecords(rows, header) {
+  var m = header.map, out = [];
+  for (var i = header.index + 1; i < rows.length; i++) {
+    var r = rows[i];
+    if (!r || !r.length) continue;
+    var joined = r.join("").trim();
+    if (!joined) continue;
+    if (/^(合计|总计|total|grand total)/i.test(joined)) continue;
+
+    var rec = {
+      campaign: m.campaign !== undefined ? String(r[m.campaign] || "").trim() : "(未知活动)",
+      adgroup: m.adgroup !== undefined ? String(r[m.adgroup] || "").trim() : "",
+      term: m.term !== undefined ? String(r[m.term] || "").trim() : "",
+      targeting: m.targeting !== undefined ? String(r[m.targeting] || "").trim() : "",
+      match: m.match !== undefined ? String(r[m.match] || "").trim() : "",
+      impr: m.impr !== undefined ? num(r[m.impr]) : 0,
+      clicks: m.clicks !== undefined ? num(r[m.clicks]) : 0,
+      spend: m.spend !== undefined ? num(r[m.spend]) : 0,
+      sales: m.sales !== undefined ? num(r[m.sales]) : 0,
+      orders: m.orders !== undefined ? num(r[m.orders]) : 0,
+      units: m.units !== undefined ? num(r[m.units]) : 0
+    };
+    if (!rec.term) rec.term = rec.targeting || "(无搜索词)";
+    out.push(rec);
+  }
+  return out;
+}
+
+function aggregate(records) {
+  var map = {}, order = [];
+  records.forEach(function (r) {
+    var key = [r.campaign, r.adgroup, r.term, r.match].join("\u0001");
+    var t = map[key];
+    if (!t) {
+      t = map[key] = {
+        campaign: r.campaign, adgroup: r.adgroup, term: r.term,
+        match: r.match, impr: 0, clicks: 0, spend: 0, sales: 0, orders: 0, units: 0
+      };
+      order.push(key);
+    }
+    t.impr += r.impr; t.clicks += r.clicks; t.spend += r.spend;
+    t.sales += r.sales; t.orders += r.orders; t.units += r.units;
+  });
+  return order.map(function (k) { return map[k]; });
+}
+
+/* =========================================================
+   5. 打分
+   ========================================================= */
+function metrics(r) {
+  var acos = r.sales > 0 ? r.spend / r.sales : (r.spend > 0 ? Infinity : 0);
+  return {
+    acos: acos,
+    roas: r.spend > 0 ? r.sales / r.spend : 0,
+    ctr: r.impr > 0 ? r.clicks / r.impr : 0,
+    cvr: r.clicks > 0 ? r.orders / r.clicks : 0,
+    cpc: r.clicks > 0 ? r.spend / r.clicks : 0,
+    aov: r.orders > 0 ? r.sales / r.orders : 0
+  };
+}
+
+function scoreOf(r, p) {
+  var t = p.acos / 100;
+  var m = metrics(r);
+  var negType = "";
+  var status, reason;
+
+  if (r.clicks === 0 && r.spend === 0 && r.impr === 0) {
+    return { status: "LOW", m: m, reason: "没有曝光，先看关键词是否有搜索量", negType: "" };
+  }
+
+  if (r.orders === 0) {
+    var hitClicks = r.clicks >= p.clicks;
+    var hitSpend = r.spend >= p.spend;
+    if (hitClicks || hitSpend) {
+      var strong = (r.clicks >= p.clicks * 3) || (r.spend >= p.spend * 4);
+      negType = strong ? "精准否定" : "词组否定";
+      reason = "0 订单，" + fmtInt(r.clicks) + " 次点击花了 " + fmtMoney(r.spend);
+      return { status: "NEG", m: m, reason: reason, negType: negType };
+    }
+    return { status: "WATCH", m: m, reason: "0 订单但量还不够（" + fmtInt(r.clicks) + " 点击 / " + fmtMoney(r.spend) + "）", negType: "" };
+  }
+
+  var isGood = m.acos <= t;
+  var isScale = m.acos <= t * (p.ratio / 100) && r.orders >= p.orders;
+  if (isScale) {
+    return { status: "SCALE", m: m, reason: r.orders + " 单，ACOS " + fmtPct(m.acos) + " 低于目标", negType: "" };
+  }
+  if (isGood) {
+    return { status: "OK", m: m, reason: "ACOS " + fmtPct(m.acos) + " 在目标内", negType: "" };
+  }
+  return { status: "BAD", m: m, reason: "ACOS " + fmtPct(m.acos) + " 超目标，建议降价或收窄匹配", negType: "" };
+}
+
+var STATUS_META = {
+  NEG: { label: "建议否定", cls: "neg" },
+  SCALE: { label: "建议加价", cls: "scale" },
+  OK: { label: "达标", cls: "ok" },
+  BAD: { label: "超标", cls: "bad" },
+  WATCH: { label: "观察", cls: "watch" },
+  LOW: { label: "无数据", cls: "low" }
+};
+
+/* =========================================================
+   6. 状态与渲染
+   ========================================================= */
+var state = {
+  records: [],
+  source: "",
+  view: "neg",
+  sort: { key: "spend", dir: -1 },
+  page: 1,
+  pageSize: 100,
+  q: "",
+  params: null
+};
+
+function readParams() {
+  return {
+    acos: fieldNum("pAcos", 1, 300, 30),
+    clicks: fieldNum("pClicks", 0, 100000, 10),
+    spend: fieldNum("pSpend", 0, 1000000, 5),
+    orders: fieldNum("pOrders", 1, 100000, 2),
+    ratio: fieldNum("pRatio", 10, 200, 60)
+  };
+}
+// 输入框被清空时不要跳回最小值，用默认值兜住
+function fieldNum(id, min, max, dflt) {
+  var el = document.getElementById(id);
+  if (!el) return dflt;
+  var raw = String(el.value).trim();
+  if (raw === "") return dflt;
+  return clampNum(+raw, min, max, dflt);
+}
+function clampNum(v, min, max, dflt) {
+  if (!isFinite(v)) return dflt;
+  return Math.min(max, Math.max(min, v));
+}
+
+function applyParamsToInputs(p) {
+  document.getElementById("pAcos").value = p.acos;
+  document.getElementById("pClicks").value = p.clicks;
+  document.getElementById("pSpend").value = p.spend;
+  document.getElementById("pOrders").value = p.orders;
+  document.getElementById("pRatio").value = p.ratio;
+}
+
+function loadParams() {
+  try {
+    var raw = localStorage.getItem(LS_PARAMS);
+    if (raw) {
+      var p = JSON.parse(raw);
+      if (p && typeof p === "object") {
+        return {
+          acos: clampNum(+p.acos, 1, 300, 30),
+          clicks: clampNum(+p.clicks, 0, 100000, 10),
+          spend: clampNum(+p.spend, 0, 1000000, 5),
+          orders: clampNum(+p.orders, 1, 100000, 2),
+          ratio: clampNum(+p.ratio, 10, 200, 60)
+        };
+      }
+    }
+  } catch (e) { /* 忽略损坏的本地配置 */ }
+  return { acos: DEFAULT_PARAMS.acos, clicks: DEFAULT_PARAMS.clicks, spend: DEFAULT_PARAMS.spend, orders: DEFAULT_PARAMS.orders, ratio: DEFAULT_PARAMS.ratio };
+}
+function saveParams(p) {
+  try { localStorage.setItem(LS_PARAMS, JSON.stringify(p)); } catch (e) { /* 隐私模式下可能失败 */ }
+}
+
+var COLS = {
+  neg: [
+    { k: "term", t: "搜索词", cls: "l", w: 1 },
+    { k: "campaign", t: "广告活动", cls: "l" },
+    { k: "adgroup", t: "广告组", cls: "l" },
+    { k: "match", t: "匹配" },
+    { k: "clicks", t: "点击" },
+    { k: "spend", t: "花费" },
+    { k: "negType", t: "建议否定方式", cls: "l" },
+    { k: "reason", t: "依据", cls: "l" }
+  ],
+  scale: [
+    { k: "term", t: "搜索词", cls: "l", w: 1 },
+    { k: "campaign", t: "广告活动", cls: "l" },
+    { k: "match", t: "匹配" },
+    { k: "clicks", t: "点击" },
+    { k: "orders", t: "订单" },
+    { k: "sales", t: "销售额" },
+    { k: "acos", t: "ACOS" },
+    { k: "cpc", t: "CPC" },
+    { k: "advice", t: "建议动作", cls: "l" }
+  ],
+  detail: [
+    { k: "term", t: "搜索词", cls: "l", w: 1 },
+    { k: "campaign", t: "广告活动", cls: "l" },
+    { k: "match", t: "匹配" },
+    { k: "impr", t: "曝光" },
+    { k: "clicks", t: "点击" },
+    { k: "ctr", t: "CTR" },
+    { k: "spend", t: "花费" },
+    { k: "orders", t: "订单" },
+    { k: "sales", t: "销售额" },
+    { k: "cvr", t: "CVR" },
+    { k: "acos", t: "ACOS" },
+    { k: "status", t: "判定", cls: "l" }
+  ],
+  campaign: [
+    { k: "campaign", t: "广告活动", cls: "l", w: 1 },
+    { k: "clicks", t: "点击" },
+    { k: "spend", t: "花费" },
+    { k: "orders", t: "订单" },
+    { k: "sales", t: "销售额" },
+    { k: "cv", t: "CVR" },
+    { k: "cpc", t: "CPC" },
+    { k: "acos", t: "ACOS" },
+    { k: "terms", t: "词数" },
+    { k: "negN", t: "可否定数" }
+  ]
+};
+
+function scoredList() {
+  var p = state.params;
+  return state.records.map(function (r) {
+    var s = scoreOf(r, p);
+    var adv = "";
+    if (s.status === "SCALE") {
+      adv = s.m.acos <= (p.acos / 100) * 0.4 ? "单独建精准组，出价 +20%" : "出价 +10%，观察 3 天";
+    } else if (s.status === "BAD") {
+      adv = s.m.acos > (p.acos / 100) * 1.5 ? "降价 15%，或改精准" : "降价 10%";
+    }
+    return {
+      term: r.term, campaign: r.campaign, adgroup: r.adgroup, match: r.match || "—",
+      impr: r.impr, clicks: r.clicks, spend: r.spend, sales: r.sales,
+      orders: r.orders, units: r.units,
+      acos: s.m.acos, ctr: s.m.ctr, cvr: s.m.cvr, cpc: s.m.cpc,
+      status: s.status, reason: s.reason, negType: s.negType || "—", advice: adv
+    };
+  });
+}
+
+function campaignList(rows) {
+  var map = {};
+  rows.forEach(function (r) {
+    var c = map[r.campaign];
+    if (!c) {
+      c = map[r.campaign] = { campaign: r.campaign, impr: 0, clicks: 0, spend: 0, sales: 0, orders: 0, terms: 0, negN: 0 };
+    }
+    c.impr += r.impr; c.clicks += r.clicks; c.spend += r.spend;
+    c.sales += r.sales; c.orders += r.orders; c.terms++;
+    if (r.status === "NEG") c.negN++;
+  });
+  return Object.keys(map).map(function (k) {
+    var c = map[k];
+    var m = metrics(c);
+    c.acos = m.acos; c.cv = m.cvr; c.cpc = m.cpc;
+    return c;
+  });
+}
+
+function filtered(rows) {
+  var q = state.q.trim().toLowerCase();
+  if (!q) return rows;
+  return rows.filter(function (r) {
+    return (String(r.term || "").toLowerCase().indexOf(q) >= 0) ||
+           (String(r.campaign || "").toLowerCase().indexOf(q) >= 0) ||
+           (String(r.adgroup || "").toLowerCase().indexOf(q) >= 0);
+  });
+}
+
+function sortRows(rows) {
+  var key = state.sort.key, dir = state.sort.dir;
+  var copy = rows.slice();
+  copy.sort(function (a, b) {
+    var va = a[key], vb = b[key];
+    if (typeof va === "string" || typeof vb === "string") {
+      va = String(va == null ? "" : va).toLowerCase();
+      vb = String(vb == null ? "" : vb).toLowerCase();
+      return va < vb ? -dir : (va > vb ? dir : 0);
+    }
+    va = isFinite(va) ? va : -1;
+    vb = isFinite(vb) ? vb : -1;
+    return (va - vb) * dir;
+  });
+  return copy;
+}
+
+function cellText(col, row) {
+  var v = row[col.k];
+  switch (col.k) {
+    case "impr": case "clicks": case "orders": case "units": case "terms": case "negN":
+      return fmtInt(v);
+    case "spend": case "sales":
+      return fmtMoney(v);
+    case "ctr": case "cvr": case "cv":
+      return fmtPct(v);
+    case "acos":
+      return v === Infinity ? "∞" : fmtPct(v);
+    case "cpc":
+      return v ? "$" + v.toFixed(2) : "—";
+    case "status":
+      var meta = STATUS_META[v] || { label: v, cls: "low" };
+      return '<span class="chip ' + meta.cls + '">' + esc(meta.label) + "</span>";
+    default:
+      return esc(v == null ? "" : v);
+  }
+}
+
+function cellClass(col, row) {
+  var v = row[col.k];
+  if (col.k === "acos") {
+    if (!isFinite(v)) return "num-bad";
+    if (v <= state.params.acos / 100) return "num-good";
+    if (v <= (state.params.acos / 100) * 1.2) return "";
+    return "num-bad";
+  }
+  return "";
+}
+
+function currentRows() {
+  var p = state.params;
+  var all = scoredList();
+  if (state.view === "neg") return all.filter(function (r) { return r.status === "NEG"; });
+  if (state.view === "scale") return all.filter(function (r) { return r.status === "SCALE"; });
+  if (state.view === "detail") return all.filter(function (r) { return r.status !== "LOW"; });
+  return campaignList(all);
+}
+
+function renderTable() {
+  var cols = COLS[state.view];
+  var rows = filtered(currentRows());
+  var total = rows.length;
+  var pages = Math.max(1, Math.ceil(total / state.pageSize));
+  if (state.page > pages) state.page = pages;
+
+  // 表头
+  var thead = document.getElementById("thead");
+  var html = "<tr>";
+  cols.forEach(function (c) {
+    var arrow = state.sort.key === c.k ? (state.sort.dir === -1 ? " ↓" : " ↑") : "";
+    html += '<th class="' + (c.cls || "") + '" data-key="' + c.k + '">' + esc(c.t) +
+            '<span class="ar">' + arrow + "</span></th>";
+  });
+  html += "</tr>";
+  thead.innerHTML = html;
+
+  // 表体
+  var tbody = document.getElementById("tbody");
+  if (!total) {
+    tbody.innerHTML = '<tr><td colspan="' + cols.length + '"><div class="empty">' +
+      (state.view === "neg" ? "没有需要否定的词，这份报表很健康 👍" :
+       state.view === "scale" ? "没有符合加价条件的词，可以先把目标 ACOS 调高一点再看" :
+       "没有数据") + "</div></td></tr>";
+    document.getElementById("pager").innerHTML = "";
+    return;
+  }
+
+  var sorted = sortRows(rows);
+  var start = (state.page - 1) * state.pageSize;
+  var slice = sorted.slice(start, start + state.pageSize);
+  var body = slice.map(function (r) {
+    return "<tr>" + cols.map(function (c) {
+      return '<td class="' + (c.cls || "") + " " + cellClass(c, r) + '">' + cellText(c, r) + "</td>";
+    }).join("") + "</tr>";
+  }).join("");
+  tbody.innerHTML = body;
+
+  // 分页
+  var pager = document.getElementById("pager");
+  if (pages <= 1) {
+    pager.innerHTML = '<span>共 ' + total + " 行</span>";
+  } else {
+    pager.innerHTML =
+      '<button data-p="prev"' + (state.page === 1 ? " disabled" : "") + ">上一页</button>" +
+      "<span>第 " + state.page + " / " + pages + " 页 · 共 " + total + " 行</span>" +
+      '<button data-p="next"' + (state.page === pages ? " disabled" : "") + ">下一页</button>";
+  }
+}
+
+function renderKpis() {
+  var all = scoredList().filter(function (r) { return r.status !== "LOW"; });
+  var sum = { spend: 0, sales: 0, clicks: 0, orders: 0, impr: 0, negSpend: 0, negN: 0 };
+  all.forEach(function (r) {
+    sum.spend += r.spend; sum.sales += r.sales; sum.clicks += r.clicks;
+    sum.orders += r.orders; sum.impr += r.impr;
+    if (r.status === "NEG") { sum.negSpend += r.spend; sum.negN++; }
+  });
+  var acos = sum.sales > 0 ? sum.spend / sum.sales : Infinity;
+  var cvr = sum.clicks > 0 ? sum.orders / sum.clicks : 0;
+  var cpc = sum.clicks > 0 ? sum.spend / sum.clicks : 0;
+  var ctr = sum.impr > 0 ? sum.clicks / sum.impr : 0;
+  var target = state.params.acos / 100;
+
+  var acosCls = !isFinite(acos) ? "bad" : (acos <= target ? "good" : (acos <= target * 1.2 ? "warn" : "bad"));
+  var cards = [
+    { k: "总花费", v: fmtMoney(sum.spend), n: fmtInt(all.length) + " 个搜索词", cls: "" },
+    { k: "总销售额", v: fmtMoney(sum.sales), n: fmtInt(sum.orders) + " 单", cls: "" },
+    { k: "ACOS", v: isFinite(acos) ? fmtPct(acos) : "∞", n: "目标 " + state.params.acos + "%", cls: acosCls },
+    { k: "CVR", v: fmtPct(cvr), n: "订单 ÷ 点击", cls: "" },
+    { k: "CPC", v: cpc ? "$" + cpc.toFixed(2) : "—", n: "花费 ÷ 点击", cls: "" },
+    { k: "CTR", v: fmtPct(ctr), n: "点击 ÷ 曝光", cls: "" },
+    { k: "可否定", v: sum.negN + " 个", n: "浪费 " + fmtMoney(sum.negSpend), cls: sum.negN ? "bad" : "good" }
+  ];
+  document.getElementById("kpis").innerHTML = cards.map(function (c) {
+    return '<div class="kpi ' + c.cls + '"><div class="k">' + esc(c.k) + '</div><div class="v">' +
+      esc(c.v) + '</div><div class="n">' + esc(c.n) + "</div></div>";
+  }).join("");
+
+  document.getElementById("cNeg").textContent = sum.negN;
+  var scaleN = all.filter(function (r) { return r.status === "SCALE"; }).length;
+  document.getElementById("cScale").textContent = scaleN;
+}
+
+var HINTS = {
+  neg: "规则：0 订单，且「点击 ≥ 阈值」或「花费 ≥ 阈值」。点击/花费越高判为<b>精准否定</b>（这个词本身别投了），量少则判<b>词组否定</b>（挡住这个词组下的长尾）。导出后可直接作为否词清单使用。",
+  scale: "规则：订单 ≥ 阈值，且 ACOS ≤ 目标 × 上限比例。这类词是利润来源，建议单独建精准组提价，别和差词混在一个组里。",
+  detail: "全部搜索词的完整表现，按花费排序。点表头可换排序，ACOS 绿色＝达标、红色＝超标。",
+  campaign: "按广告活动汇总，用来判断哪个活动整体该加预算、哪个该收。"
+};
+
+function renderAll() {
+  state.params = readParams();
+  saveParams(state.params);
+  renderKpis();
+  renderTable();
+  document.getElementById("hint").innerHTML = HINTS[state.view] || "";
+}
+
+/* =========================================================
+   7. 事件绑定
+   ========================================================= */
+function showErr(title, detail) {
+  var el = document.getElementById("err");
+  el.style.display = "block";
+  el.innerHTML = "<b>" + esc(title) + "</b>" + esc(detail || "");
+  document.getElementById("main").style.display = "none";
+  document.getElementById("drop").style.display = "block";
+}
+function clearErr() {
+  document.getElementById("err").style.display = "none";
+}
+
+function analyzeText(text, source) {
+  clearErr();
+  if (!text || !text.trim()) {
+    showErr("这个文件是空的", "换一份导出的搜索词报告再试。");
+    return;
+  }
+  var delim = detectDelim(text);
+  var rows = parseCSV(text, delim);
+  var header = findHeader(rows);
+  if (!header) {
+    showErr(
+      "没认出表头，可能是报表类型不对",
+      "需要的是「搜索词报告 / Search Term Report」。至少要有：客户搜索词、点击量、花费、销售额、订单数。当前文件第一行列了：" +
+      (rows[0] ? rows[0].slice(0, 8).join(" | ") : "")
+    );
+    return;
+  }
+  if (header.map.term === undefined || header.map.clicks === undefined || header.map.spend === undefined) {
+    showErr(
+      "表头认出来了一部分，但缺关键列",
+      "缺的是：" + [
+        header.map.term === undefined ? "客户搜索词" : "",
+        header.map.clicks === undefined ? "点击量" : "",
+        header.map.spend === undefined ? "花费" : ""
+      ].filter(Boolean).join("、") + "。可以把表头这一行截图发我，我加别名。"
+    );
+    return;
+  }
+
+  var recs = toRecords(rows, header);
+  if (!recs.length) {
+    showErr("表头对了，但没读到数据行", "确认导出的报表里除了表头还有内容。");
+    return;
+  }
+
+  state.records = aggregate(recs);
+  state.source = source || "报表";
+  state.page = 1;
+  state.q = "";
+  document.getElementById("q").value = "";
+
+  document.getElementById("srcInfo").innerHTML =
+    "✅ " + esc(state.source) + " · 读取 " + fmtInt(rows.length - header.index - 1) +
+    " 行 · 合并为 " + fmtInt(state.records.length) + " 个搜索词";
+
+  document.getElementById("drop").style.display = "none";
+  document.getElementById("main").style.display = "block";
+  setView("neg");
+  renderAll();
+}
+
+function setView(v) {
+  state.view = v;
+  state.page = 1;
+  if (v === "neg") state.sort = { key: "spend", dir: -1 };
+  else if (v === "scale") state.sort = { key: "sales", dir: -1 };
+  else if (v === "detail") state.sort = { key: "spend", dir: -1 };
+  else state.sort = { key: "spend", dir: -1 };
+  Array.prototype.forEach.call(document.querySelectorAll("#tabs button"), function (b) {
+    b.classList.toggle("on", b.getAttribute("data-view") === v);
+  });
+  renderAll();
+}
+
+function readFile(file) {
+  var fr = new FileReader();
+  fr.onload = function () { analyzeText(decodeBuffer(fr.result), file.name); };
+  fr.onerror = function () { showErr("文件读不出来", "可能文件被占用，或者路径太长。换个位置再试。"); };
+  fr.readAsArrayBuffer(file);
+}
+
+/* 上传区 */
+var drop = document.getElementById("drop");
+var fileInput = document.getElementById("fileInput");
+document.getElementById("pickBtn").addEventListener("click", function () { fileInput.click(); });
+fileInput.addEventListener("change", function () {
+  if (fileInput.files && fileInput.files[0]) readFile(fileInput.files[0]);
+});
+["dragenter", "dragover"].forEach(function (ev) {
+  drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.add("over"); });
+});
+["dragleave", "drop"].forEach(function (ev) {
+  drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.remove("over"); });
+});
+drop.addEventListener("drop", function (e) {
+  var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+  if (f) readFile(f);
+});
+
+/* 示例数据 */
+document.getElementById("demoBtn").addEventListener("click", function () {
+  analyzeText(DEMO_CSV, "示例数据 · 浮潜面罩");
+});
+
+/* 换一份 */
+document.getElementById("resetBtn").addEventListener("click", function () {
+  state.records = [];
+  document.getElementById("main").style.display = "none";
+  drop.style.display = "block";
+  fileInput.value = "";
+  clearErr();
+});
+
+/* 参数变化 */
+["pAcos", "pClicks", "pSpend", "pOrders", "pRatio"].forEach(function (id) {
+  document.getElementById(id).addEventListener("input", function () {
+    state.page = 1;
+    renderAll();
+  });
+});
+
+/* Tab 切换 */
+Array.prototype.forEach.call(document.querySelectorAll("#tabs button"), function (b) {
+  b.addEventListener("click", function () { setView(b.getAttribute("data-view")); });
+});
+
+/* 排序 */
+document.getElementById("thead").addEventListener("click", function (e) {
+  var th = e.target.closest ? e.target.closest("th") : null;
+  if (!th) return;
+  var key = th.getAttribute("data-key");
+  if (!key) return;
+  if (state.sort.key === key) state.sort.dir = -state.sort.dir;
+  else state.sort = { key: key, dir: key === "term" || key === "campaign" ? 1 : -1 };
+  renderTable();
+});
+
+/* 搜索 */
+document.getElementById("q").addEventListener("input", function () {
+  state.q = this.value;
+  state.page = 1;
+  renderTable();
+});
+
+/* 分页 */
+document.getElementById("pager").addEventListener("click", function (e) {
+  var b = e.target.closest ? e.target.closest("button") : null;
+  if (!b) return;
+  var dir = b.getAttribute("data-p");
+  var total = filtered(currentRows()).length;
+  var pages = Math.max(1, Math.ceil(total / state.pageSize));
+  if (dir === "prev" && state.page > 1) state.page--;
+  if (dir === "next" && state.page < pages) state.page++;
+  renderTable();
+});
+
+/* 导出 */
+function exportRows() {
+  var cols = COLS[state.view];
+  var rows = sortRows(filtered(currentRows()));
+  var headers = cols.map(function (c) { return c.t; });
+  var body = rows.map(function (r) {
+    return cols.map(function (c) {
+      var v = r[c.k];
+      if (c.k === "acos" || c.k === "ctr" || c.k === "cvr" || c.k === "cv") {
+        return isFinite(v) ? (v * 100).toFixed(2) + "%" : "";
+      }
+      if (c.k === "cpc") return v ? v.toFixed(2) : "";
+      if (c.k === "status") return (STATUS_META[v] || {}).label || v;
+      return v == null ? "" : v;
+    });
+  });
+  return { headers: headers, rows: body, cols: cols, data: rows };
+}
+
+document.getElementById("csvBtn").addEventListener("click", function () {
+  if (!state.records.length) return;
+  var ex = exportRows();
+  var names = { neg: "建议否定", scale: "建议加价", detail: "搜索词明细", campaign: "活动汇总" };
+  var d = new Date();
+  var stamp = d.getFullYear() + String(d.getMonth() + 1).padStart(2, "0") + String(d.getDate()).padStart(2, "0");
+  download("广告" + (names[state.view] || "分析") + "_" + stamp + ".csv", toCSV(ex.headers, ex.rows));
+});
+
+document.getElementById("copyBtn").addEventListener("click", function () {
+  if (!state.records.length) return;
+  var ex = exportRows();
+  var lines = [ex.headers.join("\t")];
+  ex.rows.forEach(function (r) { lines.push(r.join("\t")); });
+  var text = lines.join("\n");
+  var btn = this;
+  function done() {
+    var old = btn.textContent;
+    btn.textContent = "已复制 ✓";
+    setTimeout(function () { btn.textContent = old; }, 1800);
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(done, function () { fallbackCopy(text, done); });
+  } else {
+    fallbackCopy(text, done);
+  }
+});
+
+function fallbackCopy(text, done) {
+  var ta = document.createElement("textarea");
+  ta.value = text;
+  ta.style.position = "fixed";
+  ta.style.opacity = "0";
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand("copy"); done(); } catch (e) { /* 忽略 */ }
+  document.body.removeChild(ta);
+}
+
+/* =========================================================
+   8. 示例数据
+   ========================================================= */
+var DEMO_CSV = [
+  "广告活动名称,广告组名称,投放,匹配类型,客户搜索词,展示量,点击量,花费,7天总销售额,7天总订单数(#),7天总销售量(#)",
+  "SP-Auto-面罩,AG-自动-宽泛,*,-,snorkel mask,12000,240,86.40,432.00,8,9",
+  "SP-Auto-面罩,AG-自动-宽泛,*,-,snorkel set adult,8000,180,64.80,180.00,3,3",
+  "SP-Auto-面罩,AG-自动-宽泛,*,-,full face snorkel mask,6500,150,54.00,0.00,0,0",
+  "SP-Auto-面罩,AG-自动-宽泛,*,-,scuba diving mask,4200,96,34.56,258.00,4,4",
+  "SP-Auto-面罩,AG-自动-宽泛,*,-,swim goggles,3000,60,21.60,0.00,0,0",
+  "SP-Auto-面罩,AG-自动-宽泛,*,-,kids snorkel mask,2500,40,14.40,30.00,1,1",
+  "SP-Manual-精准,AG-精准-核心词,anti fog dive mask,精准匹配,anti fog dive mask,1800,30,10.80,75.00,2,2",
+  "SP-Auto-面罩,AG-自动-宽泛,*,-,snorkeling gear,1500,18,6.48,0.00,0,0",
+  "SP-Auto-面罩,AG-自动-宽泛,*,-,pool goggles,900,8,2.88,0.00,0,0",
+  "SP-Manual-精准,AG-精准-核心词,diving mask for men,精准匹配,diving mask for men,600,6,2.16,45.00,1,1",
+  "SP-Auto-面罩,AG-自动-宽泛,*,-,snorkel mask for adults,5400,130,46.80,0.00,0,0",
+  "SP-Auto-面罩,AG-自动-宽泛,*,-,sea dive mask,700,25,9.00,0.00,0,0",
+  "SP-Auto-面罩,AG-自动-宽泛,*,-,water sports mask,480,12,4.32,0.00,0,0",
+  "SP-Manual-词组,AG-词组-品类词,mask and snorkel set,词组匹配,mask and snorkel set,2200,55,19.80,120.00,2,2",
+  "SP-Auto-面罩,AG-自动-宽泛,*,-,snorkel tube,300,9,3.24,0.00,0,0",
+  "SP-Manual-词组,AG-词组-品类词,swim mask,词组匹配,swim mask,1600,44,15.84,54.00,1,1"
+].join("\n");
+
+/* =========================================================
+   9. 自检（地址栏加 #selftest 可跑）
+   ========================================================= */
+function runSelfTest() {
+  var out = [];
+  var pass = 0, fail = 0;
+  function ok(name, cond, extra) {
+    if (cond) { pass++; out.push("✓ " + name); }
+    else { fail++; out.push("✗ " + name + (extra ? "  → " + extra : "")); }
+  }
+  var rows = parseCSV(DEMO_CSV, detectDelim(DEMO_CSV));
+  ok("CSV 行数 = 17", rows.length === 17, "实际 " + rows.length);
+  var h = findHeader(rows);
+  ok("找到表头", !!h);
+  ok("识别出搜索词列", h && h.map.term !== undefined);
+  ok("识别出花费列", h && h.map.spend !== undefined);
+  var recs = toRecords(rows, h);
+  ok("记录数 = 16", recs.length === 16, "实际 " + recs.length);
+  ok("第一条点击 = 240", recs[0].clicks === 240, "实际 " + recs[0].clicks);
+  ok("第一条花费 = 86.4", Math.abs(recs[0].spend - 86.4) < 1e-9, "实际 " + recs[0].spend);
+  var agg = aggregate(recs);
+  ok("聚合后 16 个词", agg.length === 16, "实际 " + agg.length);
+  var p = { acos: 30, clicks: 10, spend: 5, orders: 2, ratio: 60 };
+  var scored = agg.map(function (r) { return scoreOf(r, p); });
+  var negN = scored.filter(function (s) { return s.status === "NEG"; }).length;
+  var scaleN = scored.filter(function (s) { return s.status === "SCALE"; }).length;
+  ok("有否定词", negN >= 4, "实际 " + negN);
+  ok("有加价词", scaleN >= 2, "实际 " + scaleN);
+  var totalSpend = agg.reduce(function (a, r) { return a + r.spend; }, 0);
+  ok("总花费 ≈ 397.08", Math.abs(totalSpend - 397.08) < 0.01, "实际 " + totalSpend.toFixed(2));
+  ok("num('$1,234.50') = 1234.5", Math.abs(num("$1,234.50") - 1234.5) < 1e-9);
+  ok("num('12.5%') = 0.125", Math.abs(num("12.5%") - 0.125) < 1e-9);
+  ok("num('—') = 0", num("—") === 0);
+
+  var pre = document.createElement("pre");
+  pre.style.cssText = "background:#111;color:#ddd;padding:16px;border-radius:10px;font-size:12px;line-height:1.7;white-space:pre-wrap;margin-top:16px";
+  pre.textContent = "自检结果（" + pass + " 通过 / " + fail + " 失败）\n\n" + out.join("\n");
+  document.querySelector(".wrap").appendChild(pre);
+}
+
+/* =========================================================
+   10. 启动
+   ========================================================= */
+(function init() {
+  applyParamsToInputs(loadParams());
+  state.params = readParams();
+  // 地址栏加 ?demo=1 直接进示例结果，方便演示和截图；&view=detail 可指定初始页签
+  if (/[?&]demo=1/.test(location.search)) {
+    analyzeText(DEMO_CSV, "示例数据 · 浮潜面罩");
+    var vm = /[?&]view=(\w+)/.exec(location.search);
+    if (vm && ["neg", "scale", "detail", "campaign"].indexOf(vm[1]) >= 0) setView(vm[1]);
+  }
+  if (location.hash === "#selftest") runSelfTest();
+})();
+</script>
+</body>
+</html>
