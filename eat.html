@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cellipse cx='27' cy='42' rx='9' ry='6' fill='%235b4b45' transform='rotate(-25 27 42)'/%3E%3Cellipse cx='73' cy='42' rx='9' ry='6' fill='%235b4b45' transform='rotate(25 73 42)'/%3E%3Cg fill='%23ffffff' stroke='%23ddd7cd' stroke-width='2'%3E%3Ccircle cx='50' cy='22' r='12'/%3E%3Ccircle cx='37' cy='27' r='11'/%3E%3Ccircle cx='63' cy='27' r='11'/%3E%3Ccircle cx='33' cy='38' r='10'/%3E%3Ccircle cx='67' cy='38' r='10'/%3E%3Ccircle cx='36' cy='66' r='12'/%3E%3Ccircle cx='50' cy='62' r='13'/%3E%3Ccircle cx='64' cy='66' r='12'/%3E%3Ccircle cx='42' cy='77' r='10'/%3E%3Ccircle cx='58' cy='77' r='10'/%3E%3C/g%3E%3Cellipse cx='50' cy='40' rx='17' ry='16' fill='%235b4b45'/%3E%3Ccircle cx='50' cy='24' r='8' fill='%23ffffff'/%3E%3Ccircle cx='43.5' cy='41' r='3.6' fill='%23ffffff'/%3E%3Ccircle cx='56.5' cy='41' r='3.6' fill='%23ffffff'/%3E%3Ccircle cx='44' cy='41.8' r='2' fill='%23302420'/%3E%3Ccircle cx='57' cy='41.8' r='2' fill='%23302420'/%3E%3Ccircle cx='44.6' cy='41' r='.7' fill='%23ffffff'/%3E%3Ccircle cx='57.6' cy='41' r='.7' fill='%23ffffff'/%3E%3Cellipse cx='50' cy='48.5' rx='2.2' ry='1.6' fill='%23907d6e'/%3E%3Cellipse cx='37' cy='47' rx='3.6' ry='2.2' fill='%23f4b8b8' opacity='.85'/%3E%3Cellipse cx='63' cy='47' rx='3.6' ry='2.2' fill='%23f4b8b8' opacity='.85'/%3E%3Cpath d='M46.5 52.5 Q50 55.5 53.5 52.5' stroke='%23ffffff' stroke-width='1.6' fill='none' stroke-linecap='round'/%3E%3Crect x='41' y='85' width='5' height='10' rx='2.5' fill='%235b4b45'/%3E%3Crect x='54' y='85' width='5' height='10' rx='2.5' fill='%235b4b45'/%3E%3C/svg%3E">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>今天吃什么</title>
+<style>
+  :root {
+    --bg: #f6f7f9; --card: #ffffff; --text: #1f2933; --text-sub: #6b7280;
+    --border: #e5e7eb; --accent: #2563eb; --accent-soft: #eff6ff;
+    --ok: #16a34a; --ok-soft: #f0fdf4; --warn: #d97706; --bad: #dc2626;
+    --radius: 14px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 32px 20px 80px; }
+  header { margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; }
+  header h1 { font-size: 24px; font-weight: 700; }
+  header p { color: var(--text-sub); font-size: 13px; margin-top: 2px; }
+  header a { font-size: 13px; color: var(--accent); text-decoration: none; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; margin-bottom: 18px; }
+  .card h2 { font-size: 15px; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+  .card h2 small { font-weight: 400; color: var(--text-sub); font-size: 12px; }
+
+  /* 食材 chips */
+  .grp { margin-bottom: 8px; }
+  .grp-label { font-size: 12px; color: var(--text-sub); margin-bottom: 4px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip {
+    font-size: 13px; padding: 3px 11px; border-radius: 20px; cursor: pointer;
+    border: 1px solid var(--border); background: #fff; color: var(--text);
+    transition: all .12s; user-select: none;
+  }
+  .chip:hover { border-color: var(--accent); }
+  .chip.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .chip.custom { border-style: dashed; }
+  .chip .x { margin-left: 5px; opacity: .7; }
+  .chip .x:hover { opacity: 1; }
+  .chip.dim { opacity: .45; text-decoration: line-through; }
+
+  .addrow { display: flex; gap: 8px; margin-top: 10px; }
+  .addrow input { flex: 1; max-width: 260px; padding: 7px 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; outline: none; }
+  .addrow input:focus { border-color: var(--accent); }
+  button { border: none; background: var(--accent); color: #fff; font-size: 13px; padding: 7px 16px; border-radius: 8px; cursor: pointer; }
+  button:hover { opacity: .9; }
+  button.ghost { background: #f3f4f6; color: var(--text); }
+  .opt-row { margin-top: 12px; font-size: 13px; color: var(--text-sub); display: flex; align-items: center; gap: 6px; }
+
+  /* 筛选 */
+  .filters { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 12px; }
+  .filters select {
+    padding: 6px 8px; border: 1px solid var(--border); border-radius: 8px;
+    font-size: 13px; background: #fff; color: var(--text); outline: none;
+  }
+  .filters .fl { font-size: 12px; color: var(--text-sub); }
+  .random-btn { background: var(--warn); font-size: 14px; padding: 8px 20px; border-radius: 20px; font-weight: 600; }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 4px; border-bottom: 2px solid var(--border); margin-bottom: 14px; }
+  .tab {
+    padding: 8px 16px; font-size: 14px; cursor: pointer; color: var(--text-sub);
+    border-bottom: 2px solid transparent; margin-bottom: -2px; user-select: none;
+  }
+  .tab.on { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+  .tab .cnt { font-size: 11px; background: var(--accent-soft); color: var(--accent); border-radius: 8px; padding: 0 6px; margin-left: 3px; }
+
+  /* 菜谱卡片 */
+  .dishes { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+  .dish { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; }
+  .dish.can { border-color: #bbf7d0; background: var(--ok-soft); }
+  .dish h3 { font-size: 15px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .dish h3 .c { font-size: 11px; color: var(--accent); background: var(--accent-soft); border-radius: 8px; padding: 0 7px; font-weight: 400; }
+  .dish .meta { font-size: 12px; color: var(--text-sub); margin: 6px 0 8px; display: flex; gap: 12px; flex-wrap: wrap; }
+  .dish .meta .tg { color: var(--warn); }
+  .dish .ing { font-size: 12.5px; line-height: 1.8; }
+  .dish .ing .have { color: var(--text); }
+  .dish .ing .miss { color: var(--bad); }
+  .dish .ing .miss::after { content: "缺"; font-size: 10px; border: 1px solid var(--bad); border-radius: 6px; padding: 0 3px; margin-left: 3px; }
+  .dish .note { font-size: 12px; color: var(--text-sub); margin-top: 8px; border-top: 1px dashed var(--border); padding-top: 8px; }
+  .dish .star-row { margin-top: 10px; font-size: 12px; }
+  .dish .star-row span { cursor: pointer; color: var(--accent); }
+  .empty-tip { color: #cbd5e1; text-align: center; padding: 40px 0; font-size: 13px; grid-column: 1 / -1; }
+
+  /* 随机结果 */
+  .pick-banner {
+    display: none; background: linear-gradient(135deg, #fff7ed, #fef3c7);
+    border: 1px solid #fde68a; border-radius: var(--radius);
+    padding: 14px 18px; margin-bottom: 14px; align-items: center; gap: 12px;
+  }
+  .pick-banner.show { display: flex; }
+  .pick-banner .big { font-size: 18px; font-weight: 700; }
+  .pick-banner .sub { font-size: 12px; color: var(--text-sub); }
+  .pick-banner button { margin-left: auto; }
+
+  /* 购物清单 */
+  .shop-item { display: flex; align-items: center; gap: 10px; padding: 6px 2px; font-size: 14px; border-bottom: 1px dashed var(--border); }
+  .shop-item:last-child { border-bottom: none; }
+  .shop-item input { width: 16px; height: 16px; accent-color: var(--accent); }
+  .shop-item.done span { text-decoration: line-through; color: var(--text-sub); }
+  .shop-item .from { font-size: 11px; color: var(--text-sub); margin-left: auto; }
+  .shop-bar { display: flex; gap: 8px; margin-top: 12px; }
+  .tip { font-size: 12px; color: var(--text-sub); background: var(--accent-soft); border-radius: 10px; padding: 10px 14px; margin-top: 14px; line-height: 1.7; }
+
+  /* 密码锁 */
+  #lock { max-width: 360px; }
+  #lock .row { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+  #lock input { flex: 1; padding: 7px 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; outline: none; }
+  #lock .err { font-size: 12px; color: var(--bad); margin-top: 6px; display: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- 密码锁 -->
+  <div id="lock" class="card">
+    <div style="font-size:14px; font-weight:600">🔒 私密小工具，输密码进入</div>
+    <div class="row">
+      <input type="password" id="pwd" placeholder="和生活工具区同一个密码">
+      <button onclick="unlock()">解锁</button>
+    </div>
+    <div class="err" id="err">密码不对，再试试</div>
+  </div>
+
+  <div id="app" style="display:none">
+    <header>
+      <div>
+        <h1>🍚 今天吃什么</h1>
+        <p>报一下家里有啥，我告诉你能做啥、还缺啥</p>
+      </div>
+      <a href="index.html">← 回工具站</a>
+    </header>
+
+    <!-- 家里有什么 -->
+    <div class="card">
+      <h2>🧺 家里现有的食材 <small>点一下标记有，再点取消</small></h2>
+      <div id="catalog"></div>
+      <div class="addrow">
+        <input id="custom-ing" placeholder="目录里没有的食材，直接输" onkeydown="if(event.key==='Enter')addCustom()">
+        <button onclick="addCustom()">加上</button>
+        <button class="ghost" onclick="clearPantry()">清空</button>
+      </div>
+      <div class="opt-row">
+        <label><input type="checkbox" id="season-auto" checked onchange="saveOpt();render()"> 油盐酱醋葱姜蒜这些常备调料不用报，自动算有</label>
+      </div>
+    </div>
+
+    <!-- 筛选 -->
+    <div class="card">
+      <h2>🎚️ 挑菜偏好 <small>今晚想怎么吃</small></h2>
+      <div class="filters">
+        <span class="fl">菜系</span><span class="chips" id="cuisine-chips"></span>
+      </div>
+      <div class="filters">
+        <span class="fl">难度</span>
+        <select id="f-diff">
+          <option value="0">随便</option><option value="1">简单（新手不翻车）</option>
+          <option value="2">进阶（有点讲究）</option><option value="3">硬菜（下功夫）</option>
+        </select>
+        <span class="fl">耗时</span>
+        <select id="f-time">
+          <option value="999">不限</option><option value="20">20分钟内</option>
+          <option value="40">40分钟内</option>
+        </select>
+        <span class="fl">成本</span>
+        <select id="f-cost">
+          <option value="999">不限</option><option value="10">10元内</option>
+          <option value="20">20元内</option><option value="30">30元内</option>
+        </select>
+        <span class="fl">口味</span>
+        <select id="f-tag">
+          <option value="">不限</option><option>辣</option><option>清淡</option><option>下饭</option>
+          <option>快手</option><option>硬菜</option><option>减脂</option><option>素</option>
+        </select>
+        <button class="random-btn" onclick="randomPick()">🎲 今晚吃啥，摇一下</button>
+      </div>
+    </div>
+
+    <div class="pick-banner" id="pick">
+      <span style="font-size:26px">🎯</span>
+      <div>
+        <div class="big" id="pick-name"></div>
+        <div class="sub" id="pick-sub"></div>
+      </div>
+      <button class="ghost" onclick="randomPick()">换一个</button>
+      <button class="ghost" onclick="document.getElementById('pick').classList.remove('show')">行了</button>
+    </div>
+
+    <!-- 结果 -->
+    <div class="card">
+      <div class="tabs">
+        <div class="tab on" data-tab="can" onclick="switchTab('can')">现在就能做 <span class="cnt" id="cnt-can">0</span></div>
+        <div class="tab" data-tab="almost" onclick="switchTab('almost')">补1~2样就能做 <span class="cnt" id="cnt-almost">0</span></div>
+        <div class="tab" data-tab="all" onclick="switchTab('all')">全部菜谱 <span class="cnt" id="cnt-all">0</span></div>
+        <div class="tab" data-tab="shop" onclick="switchTab('shop')">🛒 购物清单 <span class="cnt" id="cnt-shop">0</span></div>
+      </div>
+
+      <div id="tab-can" class="tabpane"><div class="dishes" id="list-can"></div></div>
+      <div id="tab-almost" class="tabpane" style="display:none"><div class="dishes" id="list-almost"></div></div>
+      <div id="tab-all" class="tabpane" style="display:none"><div class="dishes" id="list-all"></div></div>
+      <div id="tab-shop" class="tabpane" style="display:none">
+        <div id="shop-list"></div>
+        <div class="addrow">
+          <input id="shop-add" placeholder="手动加一样要买的" onkeydown="if(event.key==='Enter')addShop()">
+          <button onclick="addShop()">加入清单</button>
+        </div>
+        <div class="shop-bar">
+          <button onclick="copyShop()">📋 一键复制（去小象超市照着买）</button>
+          <button class="ghost" onclick="clearShop()">清空清单</button>
+        </div>
+        <div class="tip">
+          💡 关于小象超市：它没有公开接口，工具没法自动读你的订单。现在这样用——清单点「一键复制」，打开小象超市逐个搜索下单，买到啥就回来把食材点灭。
+          以后想要更省事，可以把小象订单页截图发我，我帮你把买到的食材直接勾进「家里有啥」。
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="eat-recipes.js"></script>
+<script>
+  /* ---------- 密码锁（和生活工具区同一套） ---------- */
+  const LIFE_HASH = '1qyokr6';
+  function djb2(s){ let h=5381; for(let i=0;i<s.length;i++) h=((h*33)^s.charCodeAt(i))>>>0; return h.toString(36); }
+  function unlock(){
+    if(djb2(document.getElementById('pwd').value)===LIFE_HASH){
+      sessionStorage.setItem('life-ok','1'); showApp();
+    } else document.getElementById('err').style.display='block';
+  }
+  document.getElementById('pwd').addEventListener('keydown', e=>{ if(e.key==='Enter') unlock(); });
+  function showApp(){
+    document.getElementById('lock').style.display='none';
+    document.getElementById('app').style.display='';
+  }
+  if(sessionStorage.getItem('life-ok')==='1') showApp();
+
+  /* ---------- 状态 ---------- */
+  const D = window.EAT_DATA;
+  const SEASONS = new Set(D.seasonings);
+  let pantry   = JSON.parse(localStorage.getItem('eat-pantry-v1') || '[]');
+  let shop     = JSON.parse(localStorage.getItem('eat-shop-v1')   || '[]'); // {name, checked, from}
+  let cuisineF = JSON.parse(localStorage.getItem('eat-cuisine-v1')|| '[]');
+  let curTab   = 'can';
+  let seasonAuto = localStorage.getItem('eat-season-v1') !== '0';
+
+  const savePantry = () => localStorage.setItem('eat-pantry-v1', JSON.stringify(pantry));
+  const saveShop   = () => localStorage.setItem('eat-shop-v1', JSON.stringify(shop));
+  const saveCuis   = () => localStorage.setItem('eat-cuisine-v1', JSON.stringify(cuisineF));
+  const saveOpt    = () => localStorage.setItem('eat-season-v1', seasonAuto ? '1' : '0');
+
+  /* ---------- 工具 ---------- */
+  function activeIngredients(){
+    return seasonAuto ? pantry.concat(D.seasonings) : pantry.slice();
+  }
+  function have(ing){
+    if(seasonAuto && SEASONS.has(ing)) return true;
+    return pantry.includes(ing);
+  }
+  function diffLabel(d){ return ['','⭐ 简单','⭐⭐ 进阶','⭐⭐⭐ 硬菜'][d]; }
+  function escapeHtml(s){ return s.replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+  /* ---------- 筛选 ---------- */
+  function passFilters(r){
+    const diff = +document.getElementById('f-diff').value;
+    const tmax = +document.getElementById('f-time').value;
+    const cmax = +document.getElementById('f-cost').value;
+    const tag  = document.getElementById('f-tag').value;
+    if(diff && r.diff !== diff) return false;
+    if(r.time > tmax) return false;
+    if(r.cost > cmax) return false;
+    if(tag && !r.tags.includes(tag)) return false;
+    if(cuisineF.length && !cuisineF.includes(r.cuisine)) return false;
+    return true;
+  }
+  ['f-diff','f-time','f-cost','f-tag'].forEach(id=>{
+    document.getElementById(id).addEventListener('change', render);
+  });
+
+  /* ---------- 渲染：目录 ---------- */
+  function renderCatalog(){
+    const box = document.getElementById('catalog');
+    let html = '';
+    D.catalog.forEach(g=>{
+      html += `<div class="grp"><div class="grp-label">${g.group}</div><div class="chips">`;
+      g.items.forEach(it=>{
+        const on = pantry.includes(it);
+        html += `<span class="chip ${on?'on':''}" onclick="toggleIng('${it}')">${it}</span>`;
+      });
+      html += '</div></div>';
+    });
+    const customs = pantry.filter(p=>!D.catalog.some(g=>g.items.includes(p)));
+    if(customs.length){
+      html += '<div class="grp"><div class="grp-label">自己加的</div><div class="chips">';
+      customs.forEach(it=>{
+        html += `<span class="chip on custom" onclick="toggleIng('${it}')">${escapeHtml(it)}<span class="x">✕</span></span>`;
+      });
+      html += '</div></div>';
+    }
+    box.innerHTML = html;
+  }
+
+  function toggleIng(name){
+    const i = pantry.indexOf(name);
+    if(i>=0) pantry.splice(i,1); else pantry.push(name);
+    savePantry(); render();
+  }
+  function addCustom(){
+    const el = document.getElementById('custom-ing');
+    const v = el.value.trim();
+    if(!v) return;
+    if(!pantry.includes(v)) pantry.push(v);
+    el.value=''; savePantry(); render();
+  }
+  function clearPantry(){ pantry=[]; savePantry(); render(); }
+
+  /* ---------- 渲染：菜谱 ---------- */
+  function dishCard(r, mode){
+    const ings = r.ing;
+    const ingHtml = ings.map(i=>{
+      const h = have(i);
+      return `<span class="${h?'have':'miss'}">${i}</span>`;
+    }).join('、');
+    const miss = ings.filter(i=>!have(i));
+    const cls = mode==='can' ? 'can' : '';
+    let extra = '';
+    if(mode==='almost'){
+      extra = `<div class="star-row">缺 ${miss.length} 样：
+        ${miss.map(m=>`<span onclick="addShopItem('${m}','${r.name}')">➕ ${m} 进购物清单</span>`).join('　')}
+      </div>`;
+    }
+    return `<div class="dish ${cls}">
+      <h3>${r.name}<span class="c">${r.cuisine}</span></h3>
+      <div class="meta">
+        <span>${diffLabel(r.diff)}</span><span>⏱ ${r.time}分钟</span>
+        <span>💰 约${r.cost}元</span>
+        ${r.tags.map(t=>`<span class="tg">#${t}</span>`).join('')}
+      </div>
+      <div class="ing">${ingHtml}</div>
+      ${extra}
+      ${r.note?`<div class="note">💡 ${r.note}</div>`:''}
+    </div>`;
+  }
+
+  function renderDishes(){
+    const active = activeIngredients();
+    const can=[], almost=[];
+    D.recipes.forEach(r=>{
+      if(!passFilters(r)) return;
+      const miss = r.ing.filter(i=>!have(i));
+      if(miss.length===0) can.push(r);
+      else if(miss.length<=2) almost.push({r,miss});
+    });
+    const all = D.recipes.filter(passFilters);
+
+    can.sort((a,b)=>a.time-b.time);
+    almost.sort((a,b)=>a.miss.length-b.miss.length || a.r.time-b.r.time);
+    all.sort((a,b)=>a.cuisine.localeCompare(b.cuisine,'zh') || a.diff-b.diff);
+
+    document.getElementById('cnt-can').textContent = can.length;
+    document.getElementById('cnt-almost').textContent = almost.length;
+    document.getElementById('cnt-all').textContent = all.length;
+    document.getElementById('cnt-shop').textContent = shop.filter(s=>!s.checked).length;
+
+    document.getElementById('list-can').innerHTML = can.length
+      ? can.map(r=>dishCard(r,'can')).join('')
+      : '<div class="empty-tip">还没有能直接做的菜——去上面多勾几个食材，或者看看「补1~2样就能做」</div>';
+    document.getElementById('list-almost').innerHTML = almost.length
+      ? almost.map(({r})=>dishCard(r,'almost')).join('')
+      : '<div class="empty-tip">按当前筛选，没有补 1~2 样就能做的菜</div>';
+    document.getElementById('list-all').innerHTML = all.length
+      ? all.map(r=>dishCard(r,'all')).join('')
+      : '<div class="empty-tip">这个筛选组合太严了，放宽一点试试</div>';
+  }
+
+  /* ---------- 购物清单 ---------- */
+  function addShopItem(name, from){
+    if(shop.some(s=>s.name===name)){ render(); return; }
+    shop.push({name, checked:false, from: from||'手动加'});
+    saveShop(); render();
+  }
+  function addShop(){
+    const el = document.getElementById('shop-add');
+    const v = el.value.trim();
+    if(!v) return;
+    addShopItem(v, '手动加'); el.value='';
+  }
+  function toggleShop(name){
+    const s = shop.find(x=>x.name===name);
+    if(s){ s.checked=!s.checked; saveShop(); render(); }
+  }
+  function clearShop(){
+    if(!shop.length) return;
+    if(confirm('清空整个购物清单？')){ shop=[]; saveShop(); render(); }
+  }
+  function renderShop(){
+    const box = document.getElementById('shop-list');
+    if(!shop.length){
+      box.innerHTML = '<div class="empty-tip">清单是空的——在「补1~2样就能做」里点缺的食材 ➕ 进来</div>';
+      return;
+    }
+    box.innerHTML = shop.map(s=>`
+      <div class="shop-item ${s.checked?'done':''}">
+        <input type="checkbox" ${s.checked?'checked':''} onchange="toggleShop('${s.name}')">
+        <span>${escapeHtml(s.name)}</span>
+        <span class="from">${s.from}</span>
+      </div>`).join('');
+  }
+  function copyShop(){
+    const todo = shop.filter(s=>!s.checked);
+    if(!todo.length){ alert('清单全勾完了，没啥要买的 🎉'); return; }
+    const text = '【买菜清单】今天吃什么工具生成\n' + todo.map(s=>'· '+s.name).join('\n');
+    navigator.clipboard.writeText(text).then(
+      ()=>alert('已复制 '+todo.length+' 样，去小象超市照着搜吧'),
+      ()=>{ // 降级
+        const ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta);
+        ta.select(); document.execCommand('copy'); ta.remove();
+        alert('已复制 '+todo.length+' 样，去小象超市照着搜吧');
+      });
+  }
+
+  /* ---------- 随机推荐 ---------- */
+  function randomPick(){
+    const pool = [];
+    D.recipes.forEach(r=>{
+      if(!passFilters(r)) return;
+      const miss = r.ing.filter(i=>!have(i));
+      if(miss.length===0) pool.push({r, w:3});
+      else if(miss.length===1) pool.push({r, w:1});
+    });
+    if(!pool.length){
+      alert('按当前筛选，家里食材做不了也补不齐——放宽筛选或者多勾几个食材');
+      return;
+    }
+    // 有的一把3倍权重，缺1样的也可能被翻牌
+    const bag = [];
+    pool.forEach(p=>{ for(let i=0;i<p.w;i++) bag.push(p.r); });
+    const pick = bag[Math.floor(Math.random()*bag.length)];
+    const miss = pick.ing.filter(i=>!have(i));
+    document.getElementById('pick-name').textContent = pick.name;
+    document.getElementById('pick-sub').textContent = miss.length
+      ? `补一样「${miss[0]}」就能吃 · ${pick.cuisine} · ${pick.time}分钟 · 约${pick.cost}元`
+      : `家里材料够了 · ${pick.cuisine} · ${pick.time}分钟 · 约${pick.cost}元` + (pick.note?` · ${pick.note}`:'');
+    document.getElementById('pick').classList.add('show');
+  }
+
+  /* ---------- Tabs ---------- */
+  function switchTab(t){
+    curTab = t;
+    document.querySelectorAll('.tab').forEach(el=>el.classList.toggle('on', el.dataset.tab===t));
+    ['can','almost','all','shop'].forEach(k=>{
+      document.getElementById('tab-'+k).style.display = k===t ? '' : 'none';
+    });
+  }
+
+  /* ---------- 菜系筛选 chips ---------- */
+  function renderCuisineChips(){
+    const cuisines = [...new Set(D.recipes.map(r=>r.cuisine))];
+    document.getElementById('cuisine-chips').innerHTML = cuisines.map(c=>
+      `<span class="chip ${cuisineF.includes(c)?'on':''}" onclick="toggleCuisine('${c}')">${c}</span>`
+    ).join('');
+  }
+  function toggleCuisine(c){
+    const i = cuisineF.indexOf(c);
+    if(i>=0) cuisineF.splice(i,1); else cuisineF.push(c);
+    saveCuis(); renderCuisineChips(); renderDishes();
+  }
+
+  /* ---------- 总渲染 ---------- */
+  function render(){
+    document.getElementById('season-auto').checked = seasonAuto;
+    renderCatalog(); renderCuisineChips(); renderDishes(); renderShop();
+  }
+  render();
+</script>
+</body>
+</html>
