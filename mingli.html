@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>八字命盘 · 江永航的工具站</title>
+<style>
+  :root {
+    --bg: #f6f7f9; --card: #fff; --text: #1f2933; --text-sub: #6b7280;
+    --border: #e5e7eb; --accent: #2563eb; --accent-soft: #eff6ff;
+    --ok: #16a34a; --warn: #d97706; --bad: #dc2626; --radius: 14px;
+    --mu: #166534; --huo: #b91c1c; --tu: #a16207; --jin: #475569; --shui: #1d4ed8;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif; background: var(--bg); color: var(--text); line-height: 1.65; }
+  .wrap { max-width: 900px; margin: 0 auto; padding: 28px 18px 90px; }
+  a.back { font-size: 13px; color: var(--accent); text-decoration: none; }
+  h1 { font-size: 22px; margin: 10px 0 2px; }
+  .lead { color: var(--text-sub); font-size: 13px; margin-bottom: 18px; }
+
+  .panel { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; margin-bottom: 16px; }
+  .row { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; }
+  .field label { display: block; font-size: 12px; color: var(--text-sub); margin-bottom: 5px; }
+  .field input[type=date], .field input[type=number], .field select {
+    width: 100%; padding: 7px 9px; border: 1px solid var(--border); border-radius: 8px;
+    font-size: 14px; color: var(--text); background: #fff; outline: none; font-family: inherit;
+  }
+  .field input:focus, .field select:focus { border-color: var(--accent); }
+  .inline { display: flex; gap: 6px; }
+  .inline select, .inline input { flex: 1; min-width: 0; }
+  .seg { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .seg button { border: 0; background: #fff; padding: 7px 16px; font-size: 13px; cursor: pointer; color: var(--text-sub); font-family: inherit; }
+  .seg button.on { background: var(--accent); color: #fff; }
+  .row2 { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; flex-wrap: wrap; }
+  .chk { font-size: 12px; color: var(--text-sub); display: flex; align-items: center; gap: 6px; }
+  button.primary { border: 0; background: var(--accent); color: #fff; font-size: 14px; font-weight: 600; padding: 9px 28px; border-radius: 9px; cursor: pointer; font-family: inherit; }
+  button.primary:hover { opacity: .92; }
+  .hide { display: none !important; }
+  .field.wide { grid-column: span 2; }
+  .inline select, .inline input { font-size: 13px; padding: 6px 5px; }
+
+  .summary { font-size: 13px; color: var(--text-sub); background: var(--accent-soft); border: 1px solid #dbeafe; border-radius: 10px; padding: 10px 14px; margin-bottom: 14px; }
+  .summary b { color: var(--text); font-weight: 600; }
+  .sec-title { font-size: 15px; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .sec-title::before { content: ""; width: 4px; height: 16px; border-radius: 2px; background: var(--accent); display: inline-block; }
+  .sec-title small { font-weight: 400; font-size: 11.5px; color: var(--text-sub); }
+
+  table.stem { width: 100%; border-collapse: collapse; font-size: 14px; }
+  table.stem th, table.stem td { border-bottom: 1px solid var(--border); padding: 9px 6px; text-align: center; }
+  table.stem th { font-weight: 600; font-size: 12px; color: var(--text-sub); }
+  table.stem th.rowhead, table.stem td.rowhead { text-align: left; font-size: 12px; color: var(--text-sub); width: 62px; white-space: nowrap; }
+  table.stem td.ganzhi { font-size: 26px; font-weight: 700; letter-spacing: 2px; line-height: 1.2; }
+  table.stem td.cang { font-size: 12px; color: var(--text-sub); line-height: 1.9; }
+  .wx0 { color: var(--mu); } .wx1 { color: var(--huo); } .wx2 { color: var(--tu); } .wx3 { color: var(--jin); } .wx4 { color: var(--shui); }
+  .ss { font-size: 12px; color: var(--text-sub); }
+
+  .wxbars { display: grid; gap: 6px; margin-top: 4px; }
+  .wxrow { display: grid; grid-template-columns: 34px 1fr 46px; align-items: center; gap: 8px; font-size: 12px; }
+  .wxtrack { height: 9px; background: #f1f2f4; border-radius: 5px; overflow: hidden; }
+  .wxfill { height: 100%; border-radius: 5px; }
+
+  .luck { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 8px; }
+  .luck div { border: 1px solid var(--border); border-radius: 10px; padding: 8px 6px; text-align: center; }
+  .luck .gz { font-size: 16px; font-weight: 700; letter-spacing: 1px; }
+  .luck .age { font-size: 11px; color: var(--text-sub); }
+
+  .read { border-top: 1px solid var(--border); padding: 14px 0 2px; }
+  .read:first-of-type { border-top: 0; }
+  .read h4 { font-size: 14px; margin-bottom: 6px; }
+  .read p { font-size: 13.5px; color: #374151; }
+  .read .basis { font-size: 11.5px; color: #9ca3af; margin-top: 6px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { font-size: 12px; padding: 2px 10px; border-radius: 999px; background: #f3f4f6; color: var(--text-sub); }
+  details { margin-top: 10px; font-size: 13px; }
+  summary { cursor: pointer; color: var(--accent); font-size: 13px; }
+  details ul { margin: 8px 0 0 18px; color: var(--text-sub); font-size: 12.5px; line-height: 1.9; }
+  .foot { font-size: 11.5px; color: #9ca3af; margin-top: 10px; }
+  .warnbox { font-size: 12px; color: #92400e; background: #fffbeb; border: 1px solid #fde68a; border-radius: 10px; padding: 9px 12px; margin-top: 12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="index.html">← 回工具站</a>
+  <h1>🔮 八字命盘</h1>
+  <p class="lead">按《渊海子平》排四柱：立春换年、节气换月、子时换日；可选出生地按真太阳时校正。再看五行旺衰、月令格局、调候喜忌。公历农历都能输。</p>
+
+  <div class="panel">
+    <div class="row">
+      <div class="field">
+        <label>历法</label>
+        <div class="seg" id="seg-cal"><button class="on" data-cal="solar">公历</button><button data-cal="lunar">农历</button></div>
+      </div>
+      <div class="field" id="solar-fields">
+        <label>出生日期</label>
+        <input type="date" id="solar-date" value="1992-08-15" min="1900-02-01" max="2100-12-31">
+      </div>
+      <div class="field hide wide" id="lunar-fields">
+        <label>农历日期（闰月自动识别）</label>
+        <div class="inline">
+          <select id="l-year"></select>
+          <select id="l-month"></select>
+          <select id="l-day"></select>
+        </div>
+      </div>
+      <div class="field">
+        <label>出生时刻（北京时间）</label>
+        <div class="inline">
+          <select id="hour"></select>
+          <input type="number" id="minute" min="0" max="59" value="0">
+        </div>
+      </div>
+      <div class="field">
+        <label>出生地（换算真太阳时）</label>
+        <select id="city"></select>
+      </div>
+      <div class="field hide" id="lon-field">
+        <label>经度（东经 °）</label>
+        <input type="number" id="lon" step="0.01" min="-180" max="180" value="120.00">
+      </div>
+      <div class="field">
+        <label>性别</label>
+        <div class="seg" id="seg-sex"><button class="on" data-sex="男">男</button><button data-sex="女">女</button></div>
+      </div>
+    </div>
+    <div class="row2">
+      <label class="chk"><input type="checkbox" id="latezi" checked> 23:00 后算次日（子时换日，《渊海子平》）</label>
+      <button class="primary" id="go">排盘</button>
+    </div>
+  </div>
+
+  <div id="out"></div>
+</div>
+
+<script src="mingli-core.js?v=20261102b"></script>
+<script>
+(function () {
+  var cal = 'solar', sex = '男';
+  var $ = function (id) { return document.getElementById(id); };
+
+  /* ---------- 初始化控件 ---------- */
+  var hourSel = $('hour');
+  for (var h = 0; h < 24; h++) {
+    var o = document.createElement('option');
+    o.value = h; o.textContent = (h < 10 ? '0' : '') + h + ' 时';
+    hourSel.appendChild(o);
+  }
+  hourSel.value = 14;
+
+  /* 出生地经度表（东经，城市中心近似值，误差 < 0.05° ≈ 12 秒） */
+  var CITIES = [
+    ['北京', 116.41], ['上海', 121.47], ['广州', 113.26], ['深圳', 114.06],
+    ['天津', 117.20], ['重庆', 106.55], ['成都', 104.07], ['杭州', 120.15],
+    ['南京', 118.80], ['武汉', 114.30], ['西安', 108.94], ['长沙', 112.94],
+    ['郑州', 113.62], ['济南', 117.00], ['青岛', 120.38], ['沈阳', 123.43],
+    ['大连', 121.62], ['哈尔滨', 126.53], ['长春', 125.32], ['石家庄', 114.51],
+    ['太原', 112.55], ['呼和浩特', 111.75], ['合肥', 117.28], ['福州', 119.30],
+    ['厦门', 118.09], ['南昌', 115.89], ['南宁', 108.32], ['海口', 110.20],
+    ['贵阳', 106.63], ['昆明', 102.83], ['拉萨', 91.11], ['兰州', 103.83],
+    ['西宁', 101.78], ['银川', 106.23], ['乌鲁木齐', 87.62], ['香港', 114.17],
+    ['澳门', 113.54], ['台北', 121.52], ['苏州', 120.62], ['无锡', 120.30],
+    ['宁波', 121.55], ['温州', 120.70], ['佛山', 113.12], ['东莞', 113.75],
+    ['中山', 113.39], ['珠海', 113.58], ['汕头', 116.68], ['泉州', 118.68],
+    ['烟台', 121.39], ['徐州', 117.18], ['常州', 119.97], ['洛阳', 112.45],
+    ['保定', 115.46], ['唐山', 118.18], ['包头', 109.84], ['桂林', 110.29],
+    ['三亚', 109.51], ['绵阳', 104.68], ['大理', 100.27], ['喀什', 75.99]
+  ];
+  var citySel = $('city');
+  var noneOpt = document.createElement('option');
+  noneOpt.value = 'none'; noneOpt.textContent = '不校正（按北京时间）';
+  citySel.appendChild(noneOpt);
+  CITIES.forEach(function (c) {
+    var oc = document.createElement('option');
+    oc.value = String(c[1]); oc.textContent = c[0] + '（' + c[1].toFixed(2) + '°E）';
+    citySel.appendChild(oc);
+  });
+  var customOpt = document.createElement('option');
+  customOpt.value = 'custom'; customOpt.textContent = '自定义经度…';
+  citySel.appendChild(customOpt);
+  citySel.value = 'none';
+  citySel.addEventListener('change', function () {
+    $('lon-field').classList.toggle('hide', citySel.value !== 'custom');
+  });
+
+  function cityLon() {
+    var v = citySel.value;
+    if (v === 'none' || v === '') return null;
+    if (v === 'custom') { var x = parseFloat($('lon').value); return isFinite(x) ? x : null; }
+    var n = parseFloat(v);
+    return isFinite(n) ? n : null;
+  }
+  function cityName() {
+    var o = citySel.options[citySel.selectedIndex];
+    return o ? o.textContent.replace(/（.*$/, '') : '';
+  }
+  function pad2(n) { return (n < 10 ? '0' : '') + n; }
+
+  var ySel = $('l-year');
+  for (var y = Ming.lunarRange[0]; y <= Ming.lunarRange[1]; y++) {
+    var oy = document.createElement('option');
+    oy.value = y; oy.textContent = y + ' 年';
+    ySel.appendChild(oy);
+  }
+  ySel.value = 1992;
+
+  function buildLunarMonths() {
+    var y = +ySel.value, mSel = $('l-month');
+    var keepRaw = mSel.value || '1', keep = parseInt(keepRaw, 10) || 1, keepLeap = /L$/.test(keepRaw);
+    mSel.innerHTML = '';
+    for (var m = 1; m <= 12; m++) {
+      var om = document.createElement('option');
+      om.value = m; om.textContent = Ming.LUNAR_MONTH[m - 1] + '月';
+      mSel.appendChild(om);
+      if (Ming.lunarToSolar(y, m, 1, true)) {
+        var ol = document.createElement('option');
+        ol.value = m + 'L'; ol.textContent = '闰' + Ming.LUNAR_MONTH[m - 1] + '月';
+        mSel.appendChild(ol);
+      }
+    }
+    mSel.value = keepLeap ? keep + 'L' : String(keep);
+    if (!mSel.value) mSel.value = '1';
+    buildLunarDays();
+  }
+  function buildLunarDays() {
+    var y = +ySel.value, mv = $('l-month').value, leap = /L$/.test(mv), m = parseInt(mv, 10);
+    var dSel = $('l-day'), keep = +dSel.value || 1;
+    dSel.innerHTML = '';
+    for (var d = 1; d <= 30; d++) {
+      if (!Ming.lunarToSolar(y, m, d, leap)) break;
+      var od = document.createElement('option');
+      od.value = d; od.textContent = Ming.LUNAR_DAY[d - 1];
+      dSel.appendChild(od);
+    }
+    dSel.value = Math.min(keep, dSel.options.length);
+  }
+  buildLunarMonths();
+  ySel.addEventListener('change', buildLunarMonths);
+  $('l-month').addEventListener('change', buildLunarDays);
+
+  /* 切到农历时，用当前公历日期反查农历，避免两边对不上 */
+  function syncLunarFromSolar() {
+    var v = $('solar-date').value;
+    if (!v) return;
+    var p = v.split('-').map(Number);
+    var lu = Ming.solarToLunar(p[0], p[1], p[2]);
+    if (!lu) return;
+    ySel.value = lu.year;
+    buildLunarMonths();
+    $('l-month').value = lu.leap ? lu.month + 'L' : String(lu.month);
+    buildLunarDays();
+    $('l-day').value = String(lu.day);
+  }
+
+  /* ---------- 交互 ---------- */
+  $('seg-cal').addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b) return;
+    cal = b.dataset.cal;
+    [].forEach.call(this.children, function (x) { x.classList.toggle('on', x === b); });
+    $('solar-fields').classList.toggle('hide', cal !== 'solar');
+    $('lunar-fields').classList.toggle('hide', cal !== 'lunar');
+    if (cal === 'lunar') syncLunarFromSolar();
+  });
+  $('seg-sex').addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b) return;
+    sex = b.dataset.sex;
+    [].forEach.call(this.children, function (x) { x.classList.toggle('on', x === b); });
+  });
+  $('go').addEventListener('click', run);
+
+  function readInput() {
+    var lon = cityLon();
+    var ts = lon !== null;
+    if (cal === 'solar') {
+      var v = $('solar-date').value;
+      if (!v) return null;
+      var p = v.split('-').map(Number);
+      return { y: p[0], m: p[1], d: p[2], h: +hourSel.value, mi: Math.min(59, Math.max(0, +$('minute').value || 0)),
+               lon: lon, useTrueSolar: ts };
+    }
+    var mv = $('l-month').value, leap = /L$/.test(mv);
+    var s = Ming.lunarToSolar(+ySel.value, parseInt(mv, 10), +$('l-day').value, leap);
+    if (!s) return null;
+    return { y: s.year, m: s.month, d: s.day, h: +hourSel.value,
+             mi: Math.min(59, Math.max(0, +$('minute').value || 0)), lon: lon, useTrueSolar: ts };
+  }
+
+  function wxClass(i) { return 'wx' + i; }
+
+  function run() {
+    var inp = readInput();
+    var out = $('out');
+    if (!inp) { out.innerHTML = '<div class="panel">日期无效，或超出 1900–2100 的农历数据范围。</div>'; return; }
+    var lateZi = $('latezi').checked;
+    var r = Ming.analyze({ y: inp.y, m: inp.m, d: inp.d, h: inp.h, mi: inp.mi, gender: sex,
+                           lateZi: lateZi, lon: inp.lon, useTrueSolar: inp.useTrueSolar });
+    var p = r.pillars, rows = Ming.tenGodRows(p);
+    var hourTxt = (inp.h < 10 ? '0' : '') + inp.h + ':' + (inp.mi < 10 ? '0' : '') + inp.mi;
+    var maxPct = Math.max.apply(null, r.wx.pct);
+
+    var html = '';
+
+    html += '<div class="summary">公历 <b>' + inp.y + '-' + inp.m + '-' + inp.d + ' ' + hourTxt + '</b>' +
+      ' · 农历 <b>' + (r.lunar ? r.lunar.text : '—') + '</b>' +
+      ' · 生肖 <b>' + Ming.SHENGXIAO[p.year.zhi] + '</b>' +
+      (r.solar ? ' · <b>' + cityName() + ' ' + r.solar.lon.toFixed(2) + '°E</b>' +
+        ' · 真太阳时 <b>' + pad2(r.solar.h) + ':' + pad2(r.solar.mi) + '</b>（' +
+        (r.solar.delta >= 0 ? '+' : '') + Math.round(r.solar.delta) + ' 分）' : ' · 按北京时间') +
+      ' · ' + r.gender + '命' +
+      ' · 生于 <b>' + p.jie.name + '</b> 后（' + Ming.fmt(p.jie.t) + ' 交节）' +
+      ' · 约 <b>' + r.luck.startYears + '岁' + (r.luck.startMonths ? r.luck.startMonths + '个月' : '') + '</b>起运</div>';
+
+    /* 四柱 */
+    html += '<div class="panel"><div class="sec-title">四柱</div><table class="stem">';
+    html += '<tr><th class="rowhead"></th><th>年柱</th><th>月柱</th><th>日柱</th><th>时柱</th></tr>';
+    html += '<tr><td class="rowhead">十神</td>' + rows.map(function (x) {
+      return '<td class="ss">' + x.ganSS + '</td>';
+    }).join('') + '</tr>';
+    html += '<tr><td class="rowhead">天干</td>' + rows.map(function (x) {
+      var g = Ming.GAN.indexOf(x.gan);
+      return '<td class="ganzhi ' + wxClass(Ming.ganWx(g)) + '">' + x.gan + '</td>';
+    }).join('') + '</tr>';
+    html += '<tr><td class="rowhead">地支</td>' + rows.map(function (x) {
+      return '<td class="ganzhi ' + wxClass(Ming.zhiWx(Ming.ZHI.indexOf(x.zhi))) + '">' + x.zhi + '</td>';
+    }).join('') + '</tr>';
+    html += '<tr><td class="rowhead">藏干</td>' + rows.map(function (x) {
+      return '<td class="cang">' + x.cang.map(function (c) { return c.gan + ' <span class="ss">' + c.ss + '</span>'; }).join('<br>') + '</td>';
+    }).join('') + '</tr>';
+    html += '<tr><td class="rowhead">纳音</td>' + rows.map(function (x) {
+      return '<td class="ss">' + x.nayin + '</td>';
+    }).join('') + '</tr>';
+    html += '<tr><td class="rowhead">空亡</td><td class="ss" colspan="4">' +
+      r.shensha.filter(function (s) { return s.name === '空亡'; }).map(function (s) { return s.at; }).join('') + '</td></tr>';
+    html += '</table></div>';
+
+    /* 五行 */
+    html += '<div class="panel"><div class="sec-title">五行力量 <small>天干各计 1 分，地支藏干按本气 1 / 中气 0.6 / 余气 0.3，月支 ×1.5</small></div><div class="wxbars">';
+    Ming.WX.forEach(function (w, i) {
+      var pct = r.wx.pct[i];
+      html += '<div class="wxrow"><span class="' + wxClass(i) + '">' + w + '</span>' +
+        '<div class="wxtrack"><div class="wxfill ' + wxClass(i) + '" style="width:' +
+        (pct > 0 ? Math.max(2, Math.round(pct * 100)) : 0) + '%;background:currentColor"></div></div>' +
+        '<span>' + Math.round(pct * 100) + '%</span></div>';
+    });
+    html += '</div><div class="foot">同类（比劫+印）' + Math.round(r.strength.ratio * 100) + '%，判为「' + r.strength.label + '」' +
+      (r.strength.deLing ? '，月令得气' : '，月令失气') + '。</div></div>';
+
+    /* 神煞 / 宫位 */
+    html += '<div class="panel"><div class="sec-title">神煞 · 宫位</div><div class="chips">';
+    r.shensha.forEach(function (s) { html += '<span class="chip">' + s.name + '（' + s.at + '）</span>'; });
+    html += '<span class="chip">命宫 ' + r.gong.mingGong + '</span><span class="chip">胎元 ' + r.gong.taiYuan + '</span>';
+    html += '</div><div class="foot">神煞取《三命通会》常用条目，只作参考，不单独断事。</div></div>';
+
+    /* 大运 */
+    html += '<div class="panel"><div class="sec-title">大运 <small>' + (r.luck.forward ? '顺行' : '逆行') + ' · 三日折一年</small></div><div class="luck">';
+    r.luck.list.forEach(function (l) {
+      html += '<div><div class="gz">' + l.text + '</div><div class="age">' + l.ageText + '起<br>' + l.year + '年</div></div>';
+    });
+    html += '</div></div>';
+
+    /* 解读 */
+    html += '<div class="panel"><div class="sec-title">解读</div>';
+    Ming.reading(r).forEach(function (s) {
+      html += '<div class="read"><h4>' + s.title + '</h4><p>' + s.text + '</p><div class="basis">依据：' + s.basis + '</div></div>';
+    });
+    html += '</div>';
+
+    /* 依据 */
+    html += '<div class="panel"><div class="sec-title">依据与说明</div>' +
+      '<details><summary>这套结论是怎么算出来的（点开）</summary><ul>' +
+      '<li><b>排盘</b>：立春换年、十二节令换月、子时换日，取自《渊海子平》；节气与农历数据来自寿星天文历（VSOP87 定气 + 定朔），1900–2100 逐日对拍。</li>' +
+      '<li><b>真太阳时</b>：古法用当地日晷（视太阳时），今人以「北京时间 + (经度−120°)×4 分钟 + 均时差」还原；均时差取 NOAA 公式，年内极值 −14.2 ~ +16.4 分，误差 < 20 秒。</li>' +
+      '<li><b>旺衰</b>：《滴天髓》「得时俱为旺论，失令便作衰看」，按月令、通根、透干计分。</li>' +
+      '<li><b>格局</b>：《子平真诠》以月令本气取格，分正官、七杀、财、印、食神、伤官、建禄、羊刃八格，各格有喜忌。</li>' +
+      '<li><b>调候</b>：《穷通宝鉴》冬木喜丙、夏木喜癸，先看寒暖燥湿再论格局。</li>' +
+      '<li><b>十神</b>：《渊海子平》以日干为我，论比劫、食伤、财、官杀、印星之性。</li>' +
+      '<li><b>神煞</b>：《三命通会》天乙、文昌、驿马、桃花、华盖、羊刃、空亡，只作点缀。</li>' +
+      '<li><b>大运</b>：阳男阴女顺行、阴男阳女逆行，出生至节令天数三日折一年。</li>' +
+      '</ul></details>' +
+      '<div class="warnbox">⚠️ 八字是一套传统符号系统，这里做的是「按古法规则推出的解释」，不是预言。健康、婚姻、投资这类决定，请以现实信息和专业意见为准。数据范围 1900–2100。</div>' +
+      '</div>';
+
+    out.innerHTML = html;
+  }
+
+  run();
+}());
+</script>
+</body>
+</html>
