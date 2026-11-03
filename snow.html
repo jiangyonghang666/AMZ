@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cellipse cx='27' cy='42' rx='9' ry='6' fill='%235b4b45' transform='rotate(-25 27 42)'/%3E%3Cellipse cx='73' cy='42' rx='9' ry='6' fill='%235b4b45' transform='rotate(25 73 42)'/%3E%3Cg fill='%23ffffff' stroke='%23ddd7cd' stroke-width='2'%3E%3Ccircle cx='50' cy='22' r='12'/%3E%3Ccircle cx='37' cy='27' r='11'/%3E%3Ccircle cx='63' cy='27' r='11'/%3E%3Ccircle cx='33' cy='38' r='10'/%3E%3Ccircle cx='67' cy='38' r='10'/%3E%3Ccircle cx='36' cy='66' r='12'/%3E%3Ccircle cx='50' cy='62' r='13'/%3E%3Ccircle cx='64' cy='66' r='12'/%3E%3Ccircle cx='42' cy='77' r='10'/%3E%3Ccircle cx='58' cy='77' r='10'/%3E%3C/g%3E%3Cellipse cx='50' cy='40' rx='17' ry='16' fill='%235b4b45'/%3E%3Ccircle cx='50' cy='24' r='8' fill='%23ffffff'/%3E%3Ccircle cx='43.5' cy='41' r='3.6' fill='%23ffffff'/%3E%3Ccircle cx='56.5' cy='41' r='3.6' fill='%23ffffff'/%3E%3Ccircle cx='44' cy='41.8' r='2' fill='%23302420'/%3E%3Ccircle cx='57' cy='41.8' r='2' fill='%23302420'/%3E%3Ccircle cx='44.6' cy='41' r='.7' fill='%23ffffff'/%3E%3Ccircle cx='57.6' cy='41' r='.7' fill='%23ffffff'/%3E%3Cellipse cx='50' cy='48.5' rx='2.2' ry='1.6' fill='%23907d6e'/%3E%3Cellipse cx='37' cy='47' rx='3.6' ry='2.2' fill='%23f4b8b8' opacity='.85'/%3E%3Cellipse cx='63' cy='47' rx='3.6' ry='2.2' fill='%23f4b8b8' opacity='.85'/%3E%3Cpath d='M46.5 52.5 Q50 55.5 53.5 52.5' stroke='%23ffffff' stroke-width='1.6' fill='none' stroke-linecap='round'/%3E%3Crect x='41' y='85' width='5' height='10' rx='2.5' fill='%235b4b45'/%3E%3Crect x='54' y='85' width='5' height='10' rx='2.5' fill='%235b4b45'/%3E%3C/svg%3E">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>雪季起量雷达 · 江永航的工具站</title>
+<style>
+  :root {
+    --bg: #f6f7f9; --card: #fff; --text: #1f2933; --sub: #6b7280;
+    --border: #e5e7eb; --accent: #2563eb; --accent-soft: #eff6ff;
+    --ok: #16a34a; --ok-soft: #ecfdf3; --bad: #dc2626; --bad-soft: #fef2f2;
+    --warn: #d97706; --radius: 14px;
+    --snow-3: #1e3a8a; --snow-2: #3b82f6; --snow-1: #bfdbfe;
+    --frost-2: #dbeafe; --frost-1: #eff6ff;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.6;
+  }
+  .wrap { max-width: 1280px; margin: 0 auto; padding: 26px 20px 70px; }
+  a.back { font-size: 13px; color: var(--accent); text-decoration: none; }
+  h1 { font-size: 22px; margin: 10px 0 2px; }
+  .lead { color: var(--sub); font-size: 13px; margin-bottom: 16px; max-width: 860px; }
+
+  .btn {
+    border: 1px solid var(--accent); background: var(--accent); color: #fff;
+    font-size: 13px; padding: 7px 14px; border-radius: 9px; cursor: pointer;
+    font-family: inherit; transition: opacity .15s;
+  }
+  .btn:hover { opacity: .9; }
+  .btn.ghost { background: #fff; color: var(--accent); }
+  .btn.sm { padding: 5px 11px; font-size: 12px; border-radius: 8px; }
+  .btn:disabled { opacity: .45; cursor: default; }
+
+  .topbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+  .topbar .spacer { flex: 1; }
+  .unit-sw { display: inline-flex; border: 1px solid var(--border); border-radius: 9px; overflow: hidden; background: #fff; }
+  .unit-sw button {
+    border: none; background: transparent; padding: 6px 12px; font-size: 12.5px;
+    cursor: pointer; color: var(--sub); font-family: inherit;
+  }
+  .unit-sw button.on { background: var(--accent); color: #fff; }
+  .stamp { font-size: 12px; color: var(--sub); }
+
+  .err {
+    background: var(--bad-soft); border: 1px solid #f5c2c2; color: #991b1b;
+    border-radius: var(--radius); padding: 14px 16px; font-size: 13px; margin-bottom: 16px;
+  }
+  .err b { display: block; margin-bottom: 4px; }
+  .warnbar {
+    background: #fffbeb; border: 1px solid #fde68a; color: #92400e;
+    border-radius: var(--radius); padding: 10px 14px; font-size: 12.5px; margin-bottom: 14px;
+  }
+
+  .kpis { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; margin-bottom: 20px; }
+  .kpi { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; }
+  .kpi .k { font-size: 12px; color: var(--sub); }
+  .kpi .v { font-size: 24px; font-weight: 700; margin-top: 2px; letter-spacing: -.5px; }
+  .kpi .n { font-size: 11.5px; color: var(--sub); margin-top: 2px; }
+  .kpi.cold { background: var(--accent-soft); border-color: #dbeafe; }
+  .kpi.good { background: var(--ok-soft); border-color: #bbe7c6; }
+
+  .tabs { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+  .tabs button {
+    border: 1px solid var(--border); background: var(--card); color: var(--text);
+    padding: 8px 16px; border-radius: 999px; font-size: 13px; cursor: pointer; font-family: inherit;
+  }
+  .tabs button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  .toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+  .toolbar .spacer { flex: 1; }
+  .toolbar input[type=text], .toolbar select {
+    padding: 7px 11px; border: 1px solid var(--border); border-radius: 9px;
+    font-size: 13px; outline: none; font-family: inherit; background: #fff; color: var(--text);
+  }
+  .toolbar input[type=text] { width: 200px; }
+  .toolbar label.chk { font-size: 12.5px; color: var(--sub); display: inline-flex; align-items: center; gap: 5px; cursor: pointer; }
+
+  .tblwrap {
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+    overflow: auto; max-height: 68vh;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  thead th {
+    position: sticky; top: 0; z-index: 2; background: #f8fafc; text-align: center;
+    font-weight: 600; color: var(--sub); font-size: 11px; padding: 8px 4px;
+    border-bottom: 1px solid var(--border); white-space: nowrap; cursor: pointer; user-select: none;
+  }
+  thead th:hover { color: var(--accent); }
+  thead th.l { text-align: left; padding-left: 12px; }
+  thead th .ar { font-size: 9px; opacity: .7; }
+  thead th.d7 { border-left: 2px solid #e2e8f0; }
+  tbody td { padding: 6px 4px; border-bottom: 1px solid #f1f3f5; text-align: center; white-space: nowrap; }
+  tbody td.l { text-align: left; padding-left: 12px; }
+  tbody tr:hover { background: #fafbfc; }
+  tbody tr.sel { background: #eff6ff; }
+  .city { font-weight: 600; }
+  .st { color: var(--sub); font-size: 11px; margin-left: 5px; }
+  .d7cell { border-left: 2px solid #e2e8f0; }
+
+  .cell { display: inline-block; min-width: 34px; padding: 2px 3px; border-radius: 5px; font-size: 10.5px; line-height: 1.5; }
+  .c-s3 { background: var(--snow-3); color: #fff; font-weight: 600; }
+  .c-s2 { background: var(--snow-2); color: #fff; font-weight: 600; }
+  .c-s1 { background: var(--snow-1); color: #1e3a8a; }
+  .c-f2 { background: var(--frost-2); color: #1e40af; }
+  .c-f1 { background: var(--frost-1); color: #64748b; }
+  .c-r  { background: #f8fafc; color: #94a3b8; }
+  .c-0  { color: #cbd5e1; }
+
+  .num-bad { color: var(--bad); font-weight: 600; }
+  .num-good { color: var(--ok); font-weight: 600; }
+  .muted { color: var(--sub); }
+
+  .mapwrap { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px; }
+  #map { width: 100%; height: auto; display: block; }
+  #map path.st { fill: #eef2f7; stroke: #cbd5e1; stroke-width: .8; }
+  #map path.st.belt { fill: #e2e9f5; }
+  #map circle.ct { stroke: #fff; stroke-width: 1; cursor: pointer; }
+  #map circle.ct:hover { stroke: #1f2933; stroke-width: 1.6; }
+  #map circle.ct.sel { stroke: #dc2626; stroke-width: 2; }
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 11.5px; color: var(--sub); padding: 8px 6px 2px; }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
+
+  .detail {
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+    margin-top: 14px; overflow: hidden;
+  }
+  .detail-head {
+    display: flex; align-items: center; gap: 10px; padding: 12px 16px;
+    border-bottom: 1px solid var(--border); background: #f8fafc;
+  }
+  .detail-head .t { font-size: 14px; font-weight: 700; }
+  .detail-head .m { font-size: 12px; color: var(--sub); }
+  .detail-head .spacer { flex: 1; }
+  .detail-head button { border: none; background: transparent; font-size: 18px; color: var(--sub); cursor: pointer; line-height: 1; }
+  .drows { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 1px; background: var(--border); }
+  .drow { background: #fff; padding: 8px 10px; }
+  .drow .d { font-size: 11px; color: var(--sub); }
+  .drow .w { font-size: 12px; font-weight: 600; margin: 1px 0; }
+  .drow .x { font-size: 11px; color: var(--sub); }
+  .drow .s { font-size: 12px; color: #1e40af; font-weight: 600; }
+
+  .loading { text-align: center; padding: 60px 20px; color: var(--sub); font-size: 13px; }
+  .spin {
+    width: 22px; height: 22px; border: 3px solid #e5e7eb; border-top-color: var(--accent);
+    border-radius: 50%; margin: 0 auto 12px; animation: sp .8s linear infinite;
+  }
+  @keyframes sp { to { transform: rotate(360deg); } }
+  footer { text-align: center; font-size: 12px; color: var(--sub); margin-top: 40px; }
+  @media (max-width: 720px) {
+    .wrap { padding: 16px 10px 60px; }
+    h1 { font-size: 19px; }
+    .toolbar input[type=text] { width: 130px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <a class="back" href="index.html">← 返回工具站</a>
+  <h1>❄️ 雪季起量雷达</h1>
+  <p class="lead">盯着美国 30 个雪带州、118 个城市未来 16 天的降雪和霜冻。数据来自 Open-Meteo（免费、无需 Key），只在本机浏览器里算，不上传任何东西。前 7 天看实况，第 8 天起只看趋势。</p>
+
+  <div class="topbar">
+    <div class="unit-sw" id="unitSw">
+      <button data-u="imperial" class="on">°F · inch</button>
+      <button data-u="metric">°C · cm</button>
+    </div>
+    <span class="stamp" id="stamp">加载中…</span>
+    <span class="spacer"></span>
+    <button class="btn ghost sm" id="refreshBtn">刷新数据</button>
+  </div>
+
+  <div id="msg"></div>
+
+  <div id="loading" class="loading">
+    <div class="spin"></div>
+    正在拉取 118 个城市的天气数据…
+  </div>
+
+  <div id="app" style="display:none">
+    <div class="kpis" id="kpis"></div>
+
+    <div class="tabs" id="tabs">
+      <button data-view="table" class="on">📋 城市雷达</button>
+      <button data-view="map">🗺️ 美国地图</button>
+    </div>
+
+    <div id="tableBar">
+      <div class="toolbar">
+        <select id="stSel"><option value="">全部州</option></select>
+        <input type="text" id="q" placeholder="搜城市…">
+        <label class="chk"><input type="checkbox" id="onlySnow"> 只看有雪</label>
+        <span class="spacer"></span>
+        <span class="muted" id="count"></span>
+      </div>
+      <div class="tblwrap">
+        <table id="tbl"><thead id="thead"></thead><tbody id="tbody"></tbody></table>
+      </div>
+    </div>
+
+    <div id="mapBar" style="display:none">
+      <div class="mapwrap">
+        <svg id="map" preserveAspectRatio="xMidYMid meet"></svg>
+        <div class="legend">
+          <span><i style="background:#1e3a8a"></i>大雪 &gt;2″</span>
+          <span><i style="background:#3b82f6"></i>中雪 0.4–2″</span>
+          <span><i style="background:#bfdbfe"></i>小雪 &lt;0.4″</span>
+          <span><i style="background:#dbeafe;border:1px solid #bfdbfe"></i>有霜冻</span>
+          <span><i style="background:#eef2f7;border:1px solid #cbd5e1"></i>无降水</span>
+          <span>圆点大小 = 未来 7 天累计降雪</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail" id="detail" style="display:none">
+      <div class="detail-head">
+        <span class="t" id="dTitle"></span>
+        <span class="m" id="dMeta"></span>
+        <span class="spacer"></span>
+        <button id="dClose" title="关闭">×</button>
+      </div>
+      <div class="drows" id="dRows"></div>
+    </div>
+  </div>
+
+  <footer>小策为江永航而建 · 数据源 Open-Meteo · 预报仅供参考</footer>
+</div>
+
+<script>window.SNOW_CITIES = [{"n":"Boulder","st":"CO","lat":40.015,"lon":-105.2705},{"n":"Colorado Springs","st":"CO","lat":38.8339,"lon":-104.8214},{"n":"Denver","st":"CO","lat":39.7392,"lon":-104.9847},{"n":"Fort Collins","st":"CO","lat":40.5853,"lon":-105.0844},{"n":"Grand Junction","st":"CO","lat":39.0639,"lon":-108.5506},{"n":"Bridgeport","st":"CT","lat":41.1792,"lon":-73.1894},{"n":"Hartford","st":"CT","lat":41.7637,"lon":-72.6851},{"n":"New Haven","st":"CT","lat":41.3082,"lon":-72.9282},{"n":"Stamford","st":"CT","lat":41.0534,"lon":-73.5387},{"n":"Cedar Rapids","st":"IA","lat":42.0083,"lon":-91.6441},{"n":"Davenport","st":"IA","lat":41.5236,"lon":-90.5776},{"n":"Des Moines","st":"IA","lat":41.6005,"lon":-93.6091},{"n":"Sioux City","st":"IA","lat":42.5,"lon":-96.4003},{"n":"Boise","st":"ID","lat":43.6135,"lon":-116.2034},{"n":"Coeur d'Alene","st":"ID","lat":47.6777,"lon":-116.7805},{"n":"Idaho Falls","st":"ID","lat":43.4666,"lon":-112.0341},{"n":"Pocatello","st":"ID","lat":42.8713,"lon":-112.4455},{"n":"Chicago","st":"IL","lat":41.85,"lon":-87.65},{"n":"Peoria","st":"IL","lat":40.6937,"lon":-89.589},{"n":"Rockford","st":"IL","lat":42.2711,"lon":-89.094},{"n":"Springfield","st":"IL","lat":39.8017,"lon":-89.6437},{"n":"Evansville","st":"IN","lat":37.9748,"lon":-87.5559},{"n":"Fort Wayne","st":"IN","lat":41.1306,"lon":-85.1289},{"n":"Indianapolis","st":"IN","lat":39.7684,"lon":-86.158},{"n":"South Bend","st":"IN","lat":41.6834,"lon":-86.25},{"n":"Salina","st":"KS","lat":38.8403,"lon":-97.6114},{"n":"Topeka","st":"KS","lat":39.0483,"lon":-95.678},{"n":"Wichita","st":"KS","lat":37.6922,"lon":-97.3375},{"n":"Boston","st":"MA","lat":42.3584,"lon":-71.0598},{"n":"Lowell","st":"MA","lat":42.6334,"lon":-71.3162},{"n":"Springfield","st":"MA","lat":42.1015,"lon":-72.5898},{"n":"Worcester","st":"MA","lat":42.2626,"lon":-71.8023},{"n":"Augusta","st":"ME","lat":44.3106,"lon":-69.7795},{"n":"Bangor","st":"ME","lat":44.7988,"lon":-68.7726},{"n":"Lewiston","st":"ME","lat":44.1004,"lon":-70.2148},{"n":"Portland","st":"ME","lat":43.6574,"lon":-70.2589},{"n":"Ann Arbor","st":"MI","lat":42.2776,"lon":-83.7409},{"n":"Detroit","st":"MI","lat":42.3314,"lon":-83.0457},{"n":"Flint","st":"MI","lat":43.0125,"lon":-83.6875},{"n":"Grand Rapids","st":"MI","lat":42.9634,"lon":-85.6681},{"n":"Lansing","st":"MI","lat":42.7325,"lon":-84.5555},{"n":"Duluth","st":"MN","lat":46.7833,"lon":-92.1066},{"n":"Minneapolis","st":"MN","lat":44.98,"lon":-93.2638},{"n":"Rochester","st":"MN","lat":44.0216,"lon":-92.4699},{"n":"Saint Cloud","st":"MN","lat":45.5608,"lon":-94.1625},{"n":"Saint Paul","st":"MN","lat":44.9444,"lon":-93.0933},{"n":"Columbia","st":"MO","lat":38.9517,"lon":-92.3341},{"n":"Kansas City","st":"MO","lat":39.0997,"lon":-94.5786},{"n":"Springfield","st":"MO","lat":37.2153,"lon":-93.2982},{"n":"St. Louis","st":"MO","lat":38.627,"lon":-90.1994},{"n":"Billings","st":"MT","lat":45.7833,"lon":-108.5007},{"n":"Bozeman","st":"MT","lat":45.6797,"lon":-111.0386},{"n":"Great Falls","st":"MT","lat":47.5002,"lon":-111.3008},{"n":"Missoula","st":"MT","lat":46.8722,"lon":-113.994},{"n":"Bismarck","st":"ND","lat":46.8083,"lon":-100.7837},{"n":"Fargo","st":"ND","lat":46.8772,"lon":-96.7898},{"n":"Grand Forks","st":"ND","lat":47.9253,"lon":-97.0328},{"n":"Minot","st":"ND","lat":48.2325,"lon":-101.2963},{"n":"Grand Island","st":"NE","lat":40.925,"lon":-98.342},{"n":"Lincoln","st":"NE","lat":40.8,"lon":-96.667},{"n":"Omaha","st":"NE","lat":41.2563,"lon":-95.9404},{"n":"Concord","st":"NH","lat":43.2081,"lon":-71.5376},{"n":"Manchester","st":"NH","lat":42.9956,"lon":-71.4548},{"n":"Nashua","st":"NH","lat":42.7654,"lon":-71.4676},{"n":"Newark","st":"NJ","lat":40.7357,"lon":-74.1724},{"n":"Paterson","st":"NJ","lat":40.9168,"lon":-74.1718},{"n":"Trenton","st":"NJ","lat":40.2171,"lon":-74.7429},{"n":"Albany","st":"NY","lat":42.6526,"lon":-73.7562},{"n":"Buffalo","st":"NY","lat":42.8865,"lon":-78.8784},{"n":"New York","st":"NY","lat":40.7143,"lon":-74.006},{"n":"Rochester","st":"NY","lat":43.1548,"lon":-77.6156},{"n":"Syracuse","st":"NY","lat":43.0481,"lon":-76.1474},{"n":"Akron","st":"OH","lat":41.0814,"lon":-81.519},{"n":"Cincinnati","st":"OH","lat":39.1271,"lon":-84.5144},{"n":"Cleveland","st":"OH","lat":41.4995,"lon":-81.6954},{"n":"Columbus","st":"OH","lat":39.9612,"lon":-82.9988},{"n":"Toledo","st":"OH","lat":41.6639,"lon":-83.5552},{"n":"Bend","st":"OR","lat":44.0582,"lon":-121.3153},{"n":"Eugene","st":"OR","lat":44.0521,"lon":-123.0867},{"n":"Portland","st":"OR","lat":45.5234,"lon":-122.6762},{"n":"Salem","st":"OR","lat":44.9429,"lon":-123.0351},{"n":"Allentown","st":"PA","lat":40.6084,"lon":-75.4902},{"n":"Erie","st":"PA","lat":42.1292,"lon":-80.0851},{"n":"Harrisburg","st":"PA","lat":40.2737,"lon":-76.8844},{"n":"Philadelphia","st":"PA","lat":39.9524,"lon":-75.1636},{"n":"Pittsburgh","st":"PA","lat":40.4406,"lon":-79.9959},{"n":"Providence","st":"RI","lat":41.824,"lon":-71.4128},{"n":"Warwick","st":"RI","lat":41.7001,"lon":-71.4162},{"n":"Aberdeen","st":"SD","lat":45.4647,"lon":-98.4865},{"n":"Rapid City","st":"SD","lat":44.0805,"lon":-103.231},{"n":"Sioux Falls","st":"SD","lat":43.5437,"lon":-96.728},{"n":"Logan","st":"UT","lat":41.7355,"lon":-111.8344},{"n":"Ogden","st":"UT","lat":41.223,"lon":-111.9738},{"n":"Provo","st":"UT","lat":40.2338,"lon":-111.6585},{"n":"Salt Lake City","st":"UT","lat":40.7608,"lon":-111.891},{"n":"Arlington","st":"VA","lat":38.881,"lon":-77.1043},{"n":"Norfolk","st":"VA","lat":36.8468,"lon":-76.2852},{"n":"Richmond","st":"VA","lat":37.5538,"lon":-77.4603},{"n":"Roanoke","st":"VA","lat":37.271,"lon":-79.9414},{"n":"Burlington","st":"VT","lat":44.4759,"lon":-73.2121},{"n":"Montpelier","st":"VT","lat":44.2601,"lon":-72.5754},{"n":"Rutland","st":"VT","lat":43.6106,"lon":-72.9726},{"n":"Seattle","st":"WA","lat":47.6062,"lon":-122.3321},{"n":"Spokane","st":"WA","lat":47.6597,"lon":-117.4291},{"n":"Tacoma","st":"WA","lat":47.2529,"lon":-122.4443},{"n":"Yakima","st":"WA","lat":46.6021,"lon":-120.5059},{"n":"Eau Claire","st":"WI","lat":44.8114,"lon":-91.4985},{"n":"Green Bay","st":"WI","lat":44.5192,"lon":-88.0198},{"n":"Madison","st":"WI","lat":43.0731,"lon":-89.4012},{"n":"Milwaukee","st":"WI","lat":43.0389,"lon":-87.9065},{"n":"Charleston","st":"WV","lat":38.3498,"lon":-81.6326},{"n":"Huntington","st":"WV","lat":38.4193,"lon":-82.4451},{"n":"Morgantown","st":"WV","lat":39.6295,"lon":-79.9559},{"n":"Parkersburg","st":"WV","lat":39.2667,"lon":-81.5615},{"n":"Casper","st":"WY","lat":42.8666,"lon":-106.3131},{"n":"Cheyenne","st":"WY","lat":41.14,"lon":-104.8202},{"n":"Cody","st":"WY","lat":44.5263,"lon":-109.0565},{"n":"Laramie","st":"WY","lat":41.3114,"lon":-105.5911}];</script>
+<script src="usmap.js"></script>
+<script>
+"use strict";
+
+/* =========================================================
+   1. 常量
+   ========================================================= */
+var CACHE_KEY = "yh-snow-v1";
+var CACHE_TTL = 30 * 60 * 1000;
+var BATCH = 30;
+
+var WCODE = {
+  0: "晴", 1: "晴间多云", 2: "多云", 3: "阴", 45: "雾", 48: "冻雾",
+  51: "毛毛雨", 53: "毛毛雨", 55: "毛毛雨", 56: "冻雨", 57: "冻雨",
+  61: "小雨", 63: "中雨", 65: "大雨", 66: "冻雨", 67: "冻雨",
+  71: "小雪", 73: "中雪", 75: "大雪", 77: "雪粒",
+  80: "阵雨", 81: "阵雨", 82: "强阵雨", 85: "阵雪", 86: "强阵雪",
+  95: "雷阵雨", 96: "雷阵雨伴冰雹", 99: "雷阵雨伴冰雹"
+};
+
+var CITIES = window.SNOW_CITIES || [];
+
+/* =========================================================
+   2. 纯计算（可单测）
+   ========================================================= */
+function isSnow(c) { return c >= 0.5; }          // 0.5cm ≈ 0.2 inch
+
+function cityStats(fc) {
+  if (!fc || !fc.time) return null;
+  var snow = fc.snowfall_sum || [];
+  var tmin = fc.temperature_2m_min || [];
+  var snow7 = 0, snow16 = 0, frost7 = 0, hard7 = 0, first = -1;
+  for (var i = 0; i < 16; i++) {
+    var s = snow[i] || 0;
+    var t = tmin[i];
+    snow16 += s;
+    if (i < 7) {
+      snow7 += s;
+      if (typeof t === "number") {
+        if (t <= 2) frost7++;
+        if (t <= 0) hard7++;
+      }
+    }
+    if (first < 0 && isSnow(s)) first = i;
+  }
+  return { snow7: snow7, snow16: snow16, first: first, frost7: frost7, hard7: hard7 };
+}
+
+function sumSnow(list, days) {
+  var t = 0;
+  list.forEach(function (fc) {
+    if (!fc) return;
+    var a = fc.snowfall_sum || [];
+    for (var i = 0; i < days; i++) t += (a[i] || 0);
+  });
+  return t;
+}
+
+/* 单位换算 */
+function temp(c, u) { return u === "imperial" ? c * 9 / 5 + 32 : c; }
+function tempUnit(u) { return u === "imperial" ? "°F" : "°C"; }
+function snowDisp(cm, u) { return u === "imperial" ? cm / 2.54 : cm; }
+function snowUnit(u) { return u === "imperial" ? "″" : "cm"; }
+function fmtT(c, u) { return Math.round(temp(c, u)) + "°"; }
+function fmtSnow(cm, u) {
+  var v = snowDisp(cm, u);
+  if (v <= 0) return "0";
+  return (v < 10 ? v.toFixed(1) : Math.round(v)) + snowUnit(u);
+}
+
+/* 每日格子样式 */
+function dayCell(snowCm, tmin, pop) {
+  if (isSnow(snowCm)) {
+    var cls = snowCm >= 5 ? "c-s3" : (snowCm >= 1 ? "c-s2" : "c-s1");
+    return { cls: cls, snow: snowCm, tmin: tmin };
+  }
+  if (typeof tmin === "number" && tmin <= 2) {
+    return { cls: tmin <= 0 ? "c-f2" : "c-f1", snow: 0, tmin: tmin };
+  }
+  if (pop >= 55) return { cls: "c-r", snow: 0, tmin: tmin, rain: true };
+  return { cls: "c-0", snow: 0, tmin: tmin };
+}
+
+/* 日期 */
+function shiftYear(iso, delta) {
+  var p = iso.split("-");
+  return (parseInt(p[0], 10) + delta) + "-" + p[1] + "-" + p[2];
+}
+function addDays(iso, n) {
+  var d = new Date(iso + "T12:00:00Z");
+  d.setUTCDate(d.getUTCDate() + n);
+  return d.toISOString().slice(0, 10);
+}
+var WEEK = ["日", "一", "二", "三", "四", "五", "六"];
+function weekOf(iso) {
+  var d = new Date(iso + "T12:00:00Z");
+  return WEEK[d.getUTCDay()];
+}
+function shortDate(iso) { return iso.slice(5).replace("-", "/"); }
+
+/* =========================================================
+   3. 状态
+   ========================================================= */
+var state = {
+  units: "imperial",
+  view: "table",
+  sort: { key: "snow7", dir: -1 },
+  q: "",
+  st: "",
+  onlySnow: false,
+  fc: [],
+  hist: [],
+  stats: [],
+  sel: -1,
+  baseDate: ""
+};
+
+/* =========================================================
+   4. 取数
+   ========================================================= */
+function getJSON(url, timeoutMs) {
+  return new Promise(function (resolve, reject) {
+    var ctrl = typeof AbortController !== "undefined" ? new AbortController() : null;
+    var timer = setTimeout(function () { if (ctrl) ctrl.abort(); }, timeoutMs || 25000);
+    fetch(url, ctrl ? { signal: ctrl.signal } : undefined)
+      .then(function (r) {
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        return r.json();
+      })
+      .then(function (j) { clearTimeout(timer); resolve(j); })
+      .catch(function (e) { clearTimeout(timer); reject(e); });
+  });
+}
+
+function chunked(arr, n) {
+  var out = [];
+  for (var i = 0; i < arr.length; i += n) out.push(arr.slice(i, i + n));
+  return out;
+}
+
+var DAILY = "snowfall_sum,temperature_2m_min,temperature_2m_max,precipitation_probability_max,weather_code";
+
+function fetchForecast() {
+  var batches = chunked(CITIES.map(function (c, i) { return { c: c, i: i }; }), BATCH);
+  var results = new Array(CITIES.length);
+  var chain = Promise.resolve();
+  var failed = 0;
+
+  batches.forEach(function (b, bi) {
+    chain = chain.then(function () {
+      var lat = b.map(function (x) { return x.c.lat; }).join(",");
+      var lon = b.map(function (x) { return x.c.lon; }).join(",");
+      var url = "https://api.open-meteo.com/v1/forecast?latitude=" + lat +
+        "&longitude=" + lon + "&daily=" + DAILY + "&timezone=auto&forecast_days=16";
+      return getJSON(url).then(function (j) {
+        var arr = Array.isArray(j) ? j : [j];
+        arr.forEach(function (d, k) {
+          if (b[k]) results[b[k].i] = d.daily || null;
+        });
+      }).catch(function () { failed++; });
+    });
+  });
+
+  return chain.then(function () {
+    if (failed === batches.length) throw new Error("所有请求都失败了，检查一下网络能不能访问 api.open-meteo.com");
+    return results;
+  });
+}
+
+function fetchHist(startIso, endIso) {
+  var batches = chunked(CITIES.map(function (c, i) { return { c: c, i: i }; }), BATCH);
+  var results = new Array(CITIES.length);
+  var chain = Promise.resolve();
+
+  batches.forEach(function (b) {
+    chain = chain.then(function () {
+      var lat = b.map(function (x) { return x.c.lat; }).join(",");
+      var lon = b.map(function (x) { return x.c.lon; }).join(",");
+      var url = "https://archive-api.open-meteo.com/v1/archive?latitude=" + lat +
+        "&longitude=" + lon + "&start_date=" + startIso + "&end_date=" + endIso +
+        "&daily=snowfall_sum,temperature_2m_min&timezone=auto";
+      return getJSON(url).then(function (j) {
+        var arr = Array.isArray(j) ? j : [j];
+        arr.forEach(function (d, k) {
+          if (b[k]) results[b[k].i] = d.daily || null;
+        });
+      }).catch(function () { /* 历史数据失败不阻断主流程 */ });
+    });
+  });
+
+  return chain.then(function () { return results; });
+}
+
+/* =========================================================
+   5. 缓存
+   ========================================================= */
+function readCache() {
+  try {
+    var raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    var o = JSON.parse(raw);
+    if (!o || !o.ts || !o.fc || !o.fc.length) return null;
+    return o;
+  } catch (e) { return null; }
+}
+function writeCache(fc, hist, baseDate) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), fc: fc, hist: hist, base: baseDate }));
+  } catch (e) { /* 容量满了就算了，不影响使用 */ }
+}
+
+/* =========================================================
+   6. 视图
+   ========================================================= */
+function msg(html, kind) {
+  var el = document.getElementById("msg");
+  if (!html) { el.innerHTML = ""; return; }
+  el.innerHTML = '<div class="' + (kind === "warn" ? "warnbar" : "err") + '">' + html + "</div>";
+}
+
+function renderKpis() {
+  var u = state.units;
+  var withSnow = 0, total7 = 0;
+  var nearest = -1;
+  state.stats.forEach(function (s) {
+    if (!s) return;
+    if (s.snow7 >= 1) withSnow++;
+    total7 += s.snow7;
+    if (s.first >= 0 && (nearest < 0 || s.first < nearest)) nearest = s.first;
+  });
+
+  // 同比只取前 7 天：第 8 天以后的预报几乎总是 0 降雪，拿去跟去年实况比会系统性偏低
+  var histTotal = state.hist && state.hist.length ? sumSnow(state.hist, 7) : null;
+  var thisTotal = sumSnow(state.fc, 7);
+  var yoy = (histTotal && histTotal > 0) ? (thisTotal - histTotal) / histTotal : null;
+
+  var firstTxt = "—", firstNote = "未来 16 天没有雪";
+  if (nearest >= 0 && state.baseDate) {
+    var d = addDays(state.baseDate, nearest);
+    firstTxt = shortDate(d);
+    firstNote = nearest === 0 ? "就是今天" : (nearest === 1 ? "明天" : "还有 " + nearest + " 天");
+  }
+
+  var yoyTxt = yoy === null ? "—" : (yoy >= 0 ? "+" : "") + (yoy * 100).toFixed(0) + "%";
+  var yoyNote = yoy === null ? "去年同期无数据" : ("去年同 7 天 " + fmtSnow(histTotal, u));
+
+  var cards = [
+    { k: "未来 7 天有雪城市", v: withSnow + " / " + CITIES.length, n: "降雪 ≥ 0.2″ 才算" },
+    { k: "未来 7 天累计降雪", v: fmtSnow(total7, u), n: "全部城市加总", cls: "cold" },
+    { k: "最近一场雪", v: firstTxt, n: firstNote },
+    { k: "比去年同期", v: yoyTxt, n: yoyNote, cls: yoy !== null && yoy > 0 ? "cold" : "" }
+  ];
+
+  document.getElementById("kpis").innerHTML = cards.map(function (c) {
+    return '<div class="kpi ' + (c.cls || "") + '"><div class="k">' + c.k +
+      '</div><div class="v">' + c.v + '</div><div class="n">' + c.n + "</div></div>";
+  }).join("");
+}
+
+function rowsData() {
+  var u = state.units;
+  var rows = CITIES.map(function (c, i) {
+    var s = state.stats[i];
+    var fc = state.fc[i];
+    return {
+      i: i, name: c.n, st: c.st, fc: fc,
+      snow7: s ? s.snow7 : -1,
+      snow16: s ? s.snow16 : -1,
+      first: s ? s.first : -1,
+      frost7: s ? s.frost7 : -1
+    };
+  });
+  if (state.st === "") { /* 全部 */ } else {
+    rows = rows.filter(function (r) { return r.st === state.st; });
+  }
+  if (state.onlySnow) rows = rows.filter(function (r) { return r.snow7 >= 1 || (r.frost7 > 0); });
+  var q = state.q.trim().toLowerCase();
+  if (q) {
+    rows = rows.filter(function (r) {
+      return r.name.toLowerCase().indexOf(q) >= 0 || r.st.toLowerCase() === q;
+    });
+  }
+  return rows;
+}
+
+function sortRows(rows) {
+  var k = state.sort.key, dir = state.sort.dir;
+  var copy = rows.slice();
+  copy.sort(function (a, b) {
+    var va = a[k], vb = b[k];
+    if (typeof va === "string") {
+      va = va.toLowerCase(); vb = String(vb).toLowerCase();
+      return va < vb ? -dir : (va > vb ? dir : 0);
+    }
+    // 首场雪：-1 表示没有雪，永远排最后，别被当成"最早"
+    if (k === "first") {
+      if (va < 0 && vb >= 0) return 1;
+      if (vb < 0 && va >= 0) return -1;
+    }
+    if (va === vb) return a.name < b.name ? -1 : 1;
+    return (va - vb) * dir;
+  });
+  return copy;
+}
+
+function renderTable() {
+  var u = state.units;
+  var days = 14;
+  var base = state.baseDate;
+  var th = '<tr><th class="l" data-k="name">城市<span class="ar">' +
+    (state.sort.key === "name" ? (state.sort.dir === -1 ? " ↓" : " ↑") : "") + "</span></th>";
+  for (var d = 0; d < days; d++) {
+    var iso = base ? addDays(base, d) : "";
+    var label = d === 0 ? "今天" : (d === 1 ? "明天" : "周" + weekOf(iso));
+    var sub = iso ? shortDate(iso) : "";
+    th += '<th data-k="d' + d + '"' + (d === 7 ? ' class="d7"' : "") + ' title="' + iso + '">' +
+      label + '<br><span style="font-weight:400;opacity:.75">' + sub + "</span></th>";
+  }
+  th += '<th data-k="first">首场雪<span class="ar">' +
+    (state.sort.key === "first" ? (state.sort.dir === -1 ? " ↓" : " ↑") : "") + "</span></th>";
+  th += '<th data-k="snow7">7天累计<span class="ar">' +
+    (state.sort.key === "snow7" ? (state.sort.dir === -1 ? " ↓" : " ↑") : "") + "</span></th>";
+  th += '<th data-k="frost7" title="未来 7 天最低温 ≤2°C 的天数">霜冻天<span class="ar">' +
+    (state.sort.key === "frost7" ? (state.sort.dir === -1 ? " ↓" : " ↑") : "") + "</span></th></tr>";
+  document.getElementById("thead").innerHTML = th;
+
+  var rows = sortRows(rowsData());
+  document.getElementById("count").textContent = rows.length + " 个城市";
+  if (state.sort.key === "snow7" && state.sort.dir === -1) {
+    // 默认排序时把完全没雪没霜的城市沉底
+    rows.sort(function (a, b) {
+      var wa = (a.snow7 >= 1 || a.frost7 > 0) ? 0 : 1;
+      var wb = (b.snow7 >= 1 || b.frost7 > 0) ? 0 : 1;
+      if (wa !== wb) return wa - wb;
+      return (b.snow7 - a.snow7) || (b.frost7 - a.frost7);
+    });
+  }
+
+  if (!rows.length) {
+    document.getElementById("tbody").innerHTML =
+      '<tr><td colspan="' + (days + 4) + '" style="padding:40px;color:#94a3b8">没有符合筛选的城市</td></tr>';
+    return;
+  }
+
+  var html = rows.map(function (r) {
+    var fc = r.fc;
+    var tds = "";
+    for (var d = 0; d < days; d++) {
+      if (!fc) { tds += '<td class="' + (d === 7 ? "d7cell" : "") + '"><span class="cell c-0">?</span></td>'; continue; }
+      var s = (fc.snowfall_sum || [])[d] || 0;
+      var t = (fc.temperature_2m_min || [])[d];
+      var p = (fc.precipitation_probability_max || [])[d] || 0;
+      var cell = dayCell(s, t, p);
+      var txt;
+      if (isSnow(s)) txt = fmtSnow(s, u);
+      else if (typeof t === "number" && t <= 2) txt = fmtT(t, u);
+      else if (cell.rain) txt = "·";
+      else txt = "";
+      var tip = (state.baseDate ? addDays(state.baseDate, d) : "") + " " +
+        ((WCODE[(fc.weather_code || [])[d]] || "—")) +
+        " · 降雪 " + fmtSnow(s, u) + " · 最低 " + fmtT(t, u) + " · 降水概率 " + p + "%";
+      tds += '<td class="' + (d === 7 ? "d7cell" : "") + '" title="' + tip + '">' +
+        '<span class="cell ' + cell.cls + '">' + txt + "</span></td>";
+    }
+    var firstTxt = r.first < 0 ? "—" : shortDate(addDays(state.baseDate, r.first));
+    var s7 = fmtSnow(r.snow7, u);
+    var frost = r.frost7 > 0 ? r.frost7 + " 天" : "—";
+    return '<tr data-i="' + r.i + '"' + (state.sel === r.i ? ' class="sel"' : "") + '>' +
+      '<td class="l"><span class="city">' + r.name + '</span><span class="st">' + r.st + "</span></td>" +
+      tds +
+      '<td>' + firstTxt + "</td>" +
+      '<td class="' + (r.snow7 >= 5 ? "num-bad" : "") + '">' + s7 + "</td>" +
+      "<td>" + frost + "</td></tr>";
+  }).join("");
+  document.getElementById("tbody").innerHTML = html;
+
+  Array.prototype.forEach.call(document.querySelectorAll("#tbody tr"), function (tr) {
+    tr.addEventListener("click", function () {
+      selectCity(+tr.getAttribute("data-i"));
+    });
+  });
+}
+
+function renderMap() {
+  var u = state.units;
+  var M = window.US_MAP;
+  if (!M) {
+    document.getElementById("mapBar").innerHTML = '<div class="err">地图组件没加载（usmap.js 丢了）</div>';
+    return;
+  }
+  var belt = {};
+  CITIES.forEach(function (c) { belt[c.st] = 1; });
+
+  var svg = '<g>' + M.paths.map(function (p) {
+    return '<path class="st' + (belt[p.id] ? " belt" : "") + '" d="' + p.d + '"></path>';
+  }).join("") + "</g><g>";
+
+  CITIES.forEach(function (c, i) {
+    var s = state.stats[i];
+    var p = M.project(c.lon, c.lat);
+    var snow7 = s ? s.snow7 : 0;
+    var frost7 = s ? s.frost7 : 0;
+    var r = 2.4 + Math.min(7, Math.sqrt(Math.max(0, snow7)) * 1.9);
+    var fill = "#eef2f7";
+    if (snow7 >= 5) fill = "#1e3a8a";
+    else if (snow7 >= 1) fill = "#3b82f6";
+    else if (snow7 > 0) fill = "#bfdbfe";
+    else if (frost7 > 0) fill = "#dbeafe";
+    else fill = "#d5deea";
+    var tip = c.n + " (" + c.st + ") · 7天降雪 " + fmtSnow(snow7, u) +
+      " · 首场雪 " + (s && s.first >= 0 ? shortDate(addDays(state.baseDate, s.first)) : "无") +
+      " · 霜冻 " + frost7 + " 天";
+    svg += '<circle class="ct' + (state.sel === i ? " sel" : "") + '" data-i="' + i + '" cx="' + p[0] +
+      '" cy="' + p[1] + '" r="' + r.toFixed(1) + '" fill="' + fill + '"><title>' + tip + "</title></circle>";
+  });
+  svg += "</g>";
+
+  var el = document.getElementById("map");
+  el.setAttribute("viewBox", "0 0 " + M.w + " " + M.h);
+  el.innerHTML = svg;
+
+  Array.prototype.forEach.call(el.querySelectorAll("circle.ct"), function (c) {
+    c.addEventListener("click", function () { selectCity(+c.getAttribute("data-i")); });
+  });
+}
+
+function selectCity(i) {
+  state.sel = i;
+  var c = CITIES[i], fc = state.fc[i], s = state.stats[i];
+  var u = state.units;
+  document.getElementById("detail").style.display = "block";
+  document.getElementById("dTitle").textContent = c.n + " · " + c.st;
+  var meta = [];
+  if (s) {
+    meta.push("16 天降雪 " + fmtSnow(s.snow16, u));
+    meta.push("霜冻 " + s.frost7 + " 天（未来 7 天）");
+    if (s.first >= 0) meta.push("首场雪 " + shortDate(addDays(state.baseDate, s.first)));
+  }
+  document.getElementById("dMeta").textContent = meta.join(" · ");
+
+  if (!fc) {
+    document.getElementById("dRows").innerHTML = '<div class="drow">没有这个城市的数据</div>';
+    return;
+  }
+  var rows = "";
+  for (var d = 0; d < 16; d++) {
+    var iso = addDays(state.baseDate, d);
+    var snow = (fc.snowfall_sum || [])[d] || 0;
+    var tmin = (fc.temperature_2m_min || [])[d];
+    var tmax = (fc.temperature_2m_max || [])[d];
+    var pop = (fc.precipitation_probability_max || [])[d] || 0;
+    var code = (fc.weather_code || [])[d];
+    var cell = dayCell(snow, tmin, pop);
+    var snowTxt = isSnow(snow) ? fmtSnow(snow, u) : (tmin <= 2 ? "有霜" : "—");
+    rows += '<div class="drow" style="opacity:' + (d >= 8 ? ".6" : "1") + '">' +
+      '<div class="d">' + shortDate(iso) + " 周" + weekOf(iso) + "</div>" +
+      '<div class="w">' + (WCODE[code] || "—") + "</div>" +
+      '<div class="s">' + snowTxt + "</div>" +
+      '<div class="x">' + fmtT(tmin, u) + " / " + fmtT(tmax, u) + " · " + pop + "%</div></div>";
+  }
+  document.getElementById("dRows").innerHTML = rows;
+
+  // 同步高亮
+  Array.prototype.forEach.call(document.querySelectorAll("#tbody tr"), function (tr) {
+    tr.classList.toggle("sel", +tr.getAttribute("data-i") === i);
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("#map circle.ct"), function (cc) {
+    cc.classList.toggle("sel", +cc.getAttribute("data-i") === i);
+  });
+}
+
+function renderAll() {
+  renderKpis();
+  if (state.view === "table") {
+    document.getElementById("tableBar").style.display = "";
+    document.getElementById("mapBar").style.display = "none";
+    renderTable();
+  } else {
+    document.getElementById("tableBar").style.display = "none";
+    document.getElementById("mapBar").style.display = "";
+    renderMap();
+  }
+  if (state.sel >= 0) selectCity(state.sel);
+}
+
+/* =========================================================
+   7. 启动流程
+   ========================================================= */
+function setStamp(ts) {
+  var d = new Date(ts);
+  var hh = String(d.getHours()).padStart(2, "0");
+  var mm = String(d.getMinutes()).padStart(2, "0");
+  document.getElementById("stamp").textContent = "更新于 " + hh + ":" + mm;
+}
+
+function applyData(fc, hist, base) {
+  state.fc = fc;
+  state.hist = hist || [];
+  state.baseDate = base;
+  state.stats = fc.map(function (f) { return cityStats(f); });
+  document.getElementById("loading").style.display = "none";
+  document.getElementById("app").style.display = "block";
+  renderAll();
+}
+
+function load(force) {
+  var cached = readCache();
+  if (!force && cached && (Date.now() - cached.ts) < CACHE_TTL) {
+    setStamp(cached.ts);
+    var badN = cached.fc.filter(function (x) { return !x; }).length;
+    if (badN) msg("有 " + badN + " 个城市没取到数据，可以点「刷新数据」重试。", "warn");
+    applyData(cached.fc, cached.hist, cached.base);
+    return;
+  }
+
+  document.getElementById("loading").style.display = "block";
+  document.getElementById("app").style.display = "none";
+  msg("");
+
+  fetchForecast().then(function (fc) {
+    var base = "";
+    for (var i = 0; i < fc.length; i++) {
+      if (fc[i] && fc[i].time && fc[i].time[0]) { base = fc[i].time[0]; break; }
+    }
+    if (!base) {
+      base = new Date().toISOString().slice(0, 10);
+    }
+    var start = shiftYear(base, -1);
+    var end = addDays(start, 15);
+    return fetchHist(start, end).then(function (hist) {
+      return { fc: fc, hist: hist, base: base };
+    });
+  }).then(function (d) {
+    writeCache(d.fc, d.hist, d.base);
+    setStamp(Date.now());
+    applyData(d.fc, d.hist, d.base);
+  }).catch(function (e) {
+    document.getElementById("loading").style.display = "none";
+    document.getElementById("app").style.display = "none";
+    msg("<b>数据没拉下来</b>" + (e && e.message ? e.message : "") +
+      '<br>常见原因：没联网、公司网络拦了 api.open-meteo.com、或者浏览器插件挡了请求。' +
+      '<br><button class="btn sm" id="retryBtn" style="margin-top:8px">重试</button>');
+    var b = document.getElementById("retryBtn");
+    if (b) b.addEventListener("click", function () { load(true); });
+  });
+}
+
+/* =========================================================
+   8. 事件
+   ========================================================= */
+Array.prototype.forEach.call(document.querySelectorAll("#tabs button"), function (b) {
+  b.addEventListener("click", function () {
+    state.view = b.getAttribute("data-view");
+    Array.prototype.forEach.call(document.querySelectorAll("#tabs button"), function (x) {
+      x.classList.toggle("on", x === b);
+    });
+    renderAll();
+  });
+});
+
+Array.prototype.forEach.call(document.querySelectorAll("#unitSw button"), function (b) {
+  b.addEventListener("click", function () {
+    state.units = b.getAttribute("data-u");
+    Array.prototype.forEach.call(document.querySelectorAll("#unitSw button"), function (x) {
+      x.classList.toggle("on", x === b);
+    });
+    if (state.stats.length) renderAll();
+  });
+});
+
+document.getElementById("thead").addEventListener("click", function (e) {
+  var th = e.target.closest ? e.target.closest("th") : null;
+  if (!th) return;
+  var k = th.getAttribute("data-k");
+  if (!k) return;
+  if (/^d\d+$/.test(k)) return;   // 日列不做排序，避免误点
+  if (state.sort.key === k) state.sort.dir = -state.sort.dir;
+  else state.sort = { key: k, dir: k === "name" ? 1 : -1 };
+  renderTable();
+});
+
+var stSel = document.getElementById("stSel");
+var sts = [];
+CITIES.forEach(function (c) { if (sts.indexOf(c.st) < 0) sts.push(c.st); });
+sts.sort();
+sts.forEach(function (s) {
+  var o = document.createElement("option");
+  o.value = s; o.textContent = s;
+  stSel.appendChild(o);
+});
+stSel.addEventListener("change", function () { state.st = this.value; renderTable(); });
+
+document.getElementById("q").addEventListener("input", function () {
+  state.q = this.value; renderTable();
+});
+document.getElementById("onlySnow").addEventListener("change", function () {
+  state.onlySnow = this.checked; renderTable();
+});
+document.getElementById("refreshBtn").addEventListener("click", function () { load(true); });
+document.getElementById("dClose").addEventListener("click", function () {
+  state.sel = -1;
+  document.getElementById("detail").style.display = "none";
+  Array.prototype.forEach.call(document.querySelectorAll("#tbody tr"), function (tr) { tr.classList.remove("sel"); });
+  Array.prototype.forEach.call(document.querySelectorAll("#map circle.ct"), function (c) { c.classList.remove("sel"); });
+});
+
+/* =========================================================
+   9. 跑起来
+   ========================================================= */
+(function init() {
+  try {
+    var saved = localStorage.getItem("yh-snow-units");
+    if (saved === "metric" || saved === "imperial") {
+      state.units = saved;
+      Array.prototype.forEach.call(document.querySelectorAll("#unitSw button"), function (x) {
+        x.classList.toggle("on", x.getAttribute("data-u") === saved);
+      });
+    }
+  } catch (e) { /* ignore */ }
+
+  // 记录单位偏好
+  Array.prototype.forEach.call(document.querySelectorAll("#unitSw button"), function (b) {
+    b.addEventListener("click", function () { try { localStorage.setItem("yh-snow-units", state.units); } catch (e) {} });
+  });
+
+  load(false);
+})();
+</script>
+</body>
+</html>
